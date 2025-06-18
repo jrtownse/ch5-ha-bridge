@@ -18,10 +18,6 @@ export default (config: { mode: string; }) => {
           {
             src: 'node_modules/@crestron/ch5-crcomlib/build_bundles/umd/cr-com-lib.js',
             dest: ''
-          },
-          {
-            src: 'node_modules/@crestron/ch5-webxpanel/dist/umd/index.js',
-            dest: ''
           }
         ]
       }),

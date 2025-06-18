@@ -864,11 +864,6 @@
     ssh2 "0.8.2"
     ssh2-sftp-client "5.3.1"
 
-"@crestron/ch5-webxpanel@^2.8.0":
-  version "2.8.0"
-  resolved "https://registry.yarnpkg.com/@crestron/ch5-webxpanel/-/ch5-webxpanel-2.8.0.tgz#fd23194e701d5c13e4928057e57cbac34fb34026"
-  integrity sha512-Q8wX3Y4iyBaMM9l4mUnWsfisqHsDvfdiVFE8gAPOl95lPBSg8fyimd33vhNuzt8n3IZTXLLKJ6nIHp3pmxyJMA==
-
 "@esbuild/aix-ppc64@0.25.5":
   version "0.25.5"
   resolved "https://registry.yarnpkg.com/@esbuild/aix-ppc64/-/aix-ppc64-0.25.5.tgz#4e0f91776c2b340e75558f60552195f6fad09f18"

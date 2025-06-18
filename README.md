@@ -37,3 +37,35 @@ tie things in properly. We may need to create a "bootloader" CH5 app that then g
 are many other possible considerations here.
 
 Help is very much welcome here!
+
+## MQTT Reference
+
+The following is a list of MQTT topics that this project currently implements.
+
+* `crestron/ch5_mqtt/{PanelModel}_{PanelSerial}` - The root topic for this panel.
+  * `/joins` - Joins subsystem, allowing raw access to Crestron join information.
+    * `/{JoinType}/{JoinName}` (R/W) - API to access joins directly.
+      * `/_subscribe` (W) - Special topic to force subscribing to a join. No payload is used.
+      * `/_unsubscribe` (W) - Special topic to force unsubscribing from a join. No payload is used.
+    * `/_subscribeAll` (W) - Special topic to subscribe to all joins the panel is currently aware of. No payload is used.
+  * `/events` - Various event subsystems.
+    * `/button/{ButtonName}/press` (R) - Indication that a button was pressed. `true` when pressed, `false` when released.
+  * `/ledAccessory` - LED accessory subsystem/control.
+    * `/available` (R, persistent) - `true` if the LED accessory is available, `false` otherwise.
+    * `/color` (R/W) - Color of the LED accessory. Accepts hex, color names, tuple, or `{"r":100,"g":100,"b":100}`.
+    * `/brightness` (R/W) - Brightness of the LED accessory, from 0 to 100.
+    * `/power` (R/W) - Power state of the LED accessory, `true` for on, `false` for off.
+
+
+### Join Reference
+
+When accessing joins through the `/joins` topic, the join type will be one of `boolean`, `integer`, `string`, or 
+`object`. Join names are defined by the [Reserved Join Viewers][rjviewer] in the Crestron documentation, though certain
+other undocumented joins may also be available.
+
+When reading a join, the *State* name will be used, which normally *will* be suffixed with `_fb`. Subscriptions can only
+be made to these states, not events.
+
+When writing to a join, use the *Event* name, which will normally *not* be suffixed with `_fb`.
+
+[rjviewer]: https://sdkcon78221.crestron.com/downloads/rjviewapp/index.html

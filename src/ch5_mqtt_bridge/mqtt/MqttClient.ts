@@ -33,15 +33,19 @@ export default class Ch5MqttClient {
     }
 
     private _onMessage(topic: string, message: any) {
-        const messageObject = JSON.parse(message.toString());
-        console.log(`[MqttClient] Received message on topic ${topic}:`, messageObject);
+        try {
+            const messageObject = JSON.parse(message.toString());
+            console.log(`[MqttClient] Received message on topic ${topic}:`, messageObject);
 
-        if (!topic.startsWith(`${this._baseTopic}/`)) {
-            return;
+            if (!topic.startsWith(`${this._baseTopic}/`)) {
+                return;
+            }
+
+            let cleanedTopic = topic.slice(this._baseTopic.length + 1);
+            this._router.handleMessage(cleanedTopic, messageObject);
+        } catch (error) {
+            console.error(`[MqttClient] Error processing message on topic ${topic}!`, error, message.toString());
         }
-
-        let cleanedTopic = topic.slice(this._baseTopic.length + 1);
-        this._router.handleMessage(cleanedTopic, messageObject);
     }
 
     public sendMessage(topic: string, message: any) {

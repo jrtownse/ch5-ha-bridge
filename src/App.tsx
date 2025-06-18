@@ -6,28 +6,22 @@ import { useState, useEffect, useMemo } from 'react';
 import { Ch5MqttBridge } from "./ch5_mqtt_bridge/Ch5MqttBridge.ts";
 
 // Initialize eruda for panel/app debugging capabilities (in dev mode only)
-if (import.meta.env.VITE_APP_ENV === 'development') {
+if (import.meta.env.DEV) {
   import('eruda').then(({ default: eruda }) => {
     eruda.init();
   });
 }
 
 // initialize the bridge
-setTimeout(() => {
-  const BridgeInstance = new Ch5MqttBridge();
-  window.Ch5MqttBridgeInstance = BridgeInstance;
+const BridgeInstance = new Ch5MqttBridge();
+window.Ch5MqttBridgeInstance = BridgeInstance;
 
-  BridgeInstance.start();
-}, 5_000);
+BridgeInstance.start();
 
 function App() {
-  useEffect(() => {
-  })
-
   return (
     <>
-        <h1 style={{ color: "#888888" }}>Hello, world.</h1>
-      <iframe src={ import.meta.env.VITE_HA_DASHBOARD_URL }/>
+      <iframe src={ import.meta.env.VITE_HA_DASHBOARD_URL } style={{ width: `100vw`, height: `100vh` }}/>
     </>
   )
 }
