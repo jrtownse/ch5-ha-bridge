@@ -1,6 +1,6 @@
 import {Container} from "inversify";
 
-import {TouchEventService} from "./services/TouchEventService.ts";
+import {HardButtonService} from "./services/HardButtonService.ts";
 import {JoinProxyService} from "./services/JoinProxyService.ts";
 import { LedAccessoryController } from "./interop/controllers/LedAccessoryController.ts";
 import Ch5MqttClient from "./mqtt/MqttClient.ts";
@@ -13,7 +13,7 @@ export class Ch5MqttBridge {
     private _initialized: boolean = false;
 
     private _joinProxyService: JoinProxyService | undefined;
-    private _touchEventService: TouchEventService | undefined;
+    private _touchEventService: HardButtonService | undefined;
     private _ledAccessoryService: LedAccessoryService | undefined;
 
     private constructor() {
@@ -23,7 +23,7 @@ export class Ch5MqttBridge {
         this._diContainer.bind(LedAccessoryController).toSelf().inSingletonScope();
 
         this._diContainer.bind(JoinProxyService).toSelf().inSingletonScope();
-        this._diContainer.bind(TouchEventService).toSelf().inSingletonScope();
+        this._diContainer.bind(HardButtonService).toSelf().inSingletonScope();
         this._diContainer.bind(LedAccessoryService).toSelf().inSingletonScope();
     }
 
@@ -48,7 +48,7 @@ export class Ch5MqttBridge {
     public loadServices() {
         // initialize a new service
         this._joinProxyService = this._diContainer.get(JoinProxyService);
-        this._touchEventService = this._diContainer.get(TouchEventService);
+        this._touchEventService = this._diContainer.get(HardButtonService);
         this._ledAccessoryService = this._diContainer.get(LedAccessoryService);
     }
 }

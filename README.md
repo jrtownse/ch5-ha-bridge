@@ -40,21 +40,23 @@ Help is very much welcome here!
 
 ## MQTT Reference
 
-The following is a list of MQTT topics that this project currently implements.
+The following is a list of MQTT topics that this project currently implements. All custom MQTT events will be placed in
+the `crestron/ch5_mqtt/{PanelModel}_{PanelSerial}` namespace, with the following subtopics:
 
-* `crestron/ch5_mqtt/{PanelModel}_{PanelSerial}` - The root topic for this panel.
-  * `/joins` - Joins subsystem, allowing raw access to Crestron join information.
-    * `/{JoinType}/{JoinName}` (R/W) - API to access joins directly.
-      * `/_subscribe` (W) - Special topic to force subscribing to a join. No payload is used.
-      * `/_unsubscribe` (W) - Special topic to force unsubscribing from a join. No payload is used.
-    * `/_subscribeAll` (W) - Special topic to subscribe to all joins the panel is currently aware of. No payload is used.
-  * `/events` - Various event subsystems.
-    * `/button/{ButtonName}/press` (R) - Indication that a button was pressed. `true` when pressed, `false` when released.
-  * `/ledAccessory` - LED accessory subsystem/control.
-    * `/available` (R, persistent) - `true` if the LED accessory is available, `false` otherwise.
-    * `/color` (R/W) - Color of the LED accessory. Accepts hex, color names, tuple, or `{"r":100,"g":100,"b":100}`.
-    * `/brightness` (R/W) - Brightness of the LED accessory, from 0 to 100.
-    * `/power` (R/W) - Power state of the LED accessory, `true` for on, `false` for off.
+* `/joins` - Joins subsystem.
+  * `/{JoinType}/{JoinName}` (R/W) - API to access joins directly.
+    * `/_subscribe` (W) - Special topic to force subscribing to a join. No payload is used.
+    * `/_unsubscribe` (W) - Special topic to force unsubscribing from a join. No payload is used.
+  * `/_subscribeAll` (W) - Special topic to subscribe to all joins the panel is currently aware of. No payload is used.
+* `/hardButton` - Hard Button subsystem
+  * `/{ButtonName}/press` (R) - Indication that a button was pressed. `true` when pressed, `false` when released.
+  * `/{ButtonName}/active` (R/W) - State of the button. `true` if the LED is lit and the button can be used.
+  * `/brightness` (R/W) - Brightness of the hard button LEDs, from 0 to 65535. Not respected if autobrightness is enabled.
+* `/ledAccessory` - LED accessory subsystem/control.
+  * `/available` (R, persistent) - `true` if the LED accessory is available, `false` otherwise.
+  * `/color` (R/W) - Color of the LED accessory. Accepts hex, color names, tuple, or `{"r":100,"g":100,"b":100}`.
+  * `/brightness` (R/W) - Brightness of the LED accessory, from 0 to 100.
+  * `/power` (R/W) - Power state of the LED accessory, `true` for on, `false` for off.
 
 
 ### Join Reference

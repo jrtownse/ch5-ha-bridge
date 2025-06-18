@@ -11,17 +11,21 @@ export enum TouchPanelHardButton {
 export type HardButtonPressCallback = (button: TouchPanelHardButton) => void;
 export type HardButtonReleaseCallback = (button: TouchPanelHardButton) => void;
 export type HardButtonHeldReleasedCallback = (button: TouchPanelHardButton, millisHeld: number) => void;
+export type HardButtonBrightnessChangeCallback = (value: number) => void;
+export type HardButtonActiveCallback = (button: TouchPanelHardButton, active: boolean) => void;
 
 
 @injectable("Singleton")
 export class HardButtonController {
 
     constructor() {
-        this.registerDispatchEvent(TouchPanelHardButton.BUTTON_POWER);
-        this.registerDispatchEvent(TouchPanelHardButton.BUTTON_HOME);
-        this.registerDispatchEvent(TouchPanelHardButton.BUTTON_LIGHTBULB);
-        this.registerDispatchEvent(TouchPanelHardButton.BUTTON_UP);
-        this.registerDispatchEvent(TouchPanelHardButton.BUTTON_DOWN);
+        this.registerDispatchEvents(TouchPanelHardButton.BUTTON_POWER);
+        this.registerDispatchEvents(TouchPanelHardButton.BUTTON_HOME);
+        this.registerDispatchEvents(TouchPanelHardButton.BUTTON_LIGHTBULB);
+        this.registerDispatchEvents(TouchPanelHardButton.BUTTON_UP);
+        this.registerDispatchEvents(TouchPanelHardButton.BUTTON_DOWN);
+
+        window.CrComLib.subscribeState("n", "Csig.Hard_Buton_Brightness_fb", this._handleBrightnessChange.bind(this));
 
         this._initialized = true;
     }
@@ -30,6 +34,8 @@ export class HardButtonController {
     private _pressEventHandlers: { [key in TouchPanelHardButton]?: HardButtonPressCallback[] } = {};
     private _releaseEventHandlers: { [key in TouchPanelHardButton]?: HardButtonReleaseCallback[] } = {};
     private _heldEventHandlers: { [key in TouchPanelHardButton]?: HardButtonHeldReleasedCallback[] } = {};
+    private _buttonActiveEventHandlers: { [key in TouchPanelHardButton]?: HardButtonActiveCallback[] } = {};
+    private _brightnessChangeCallbacks : HardButtonBrightnessChangeCallback[] = [];
 
     private _buttonHoldStates = new Map<TouchPanelHardButton, Stopwatch>();
 
@@ -55,6 +61,21 @@ export class HardButtonController {
         });
     }
 
+    public onButtonActiveToggle(button: TouchPanelHardButton, callback: HardButtonActiveCallback): void {
+        this._buttonActiveEventHandlers[button] ||= [];
+        this._buttonActiveEventHandlers[button]!.push(callback);
+    }
+
+    public onAnyButtonActiveToggle(callback: HardButtonActiveCallback) {
+        Object.values(TouchPanelHardButton).forEach(button => {
+            this.onButtonActiveToggle(button, callback);
+        });
+    }
+
+    public onBrightnessChange(callback: HardButtonBrightnessChangeCallback) {
+        this._brightnessChangeCallbacks.push(callback);
+    }
+
     public getButtonLedPower(button: TouchPanelHardButton): boolean {
         let signal = `Csig.Hard_Button_${button}_On_fb`;
         return window.CrComLib.getState("boolean", signal) ?? false;
@@ -73,7 +94,7 @@ export class HardButtonController {
         window.CrComLib.publishEvent("number", "Csig.Hard_Button_Brightness", value);
     }
 
-    private registerDispatchEvent(button: TouchPanelHardButton) {
+    private registerDispatchEvents(button: TouchPanelHardButton) {
         window.CrComLib.subscribeState("boolean", `Csig.Hard_Button_${button}.Press`, (pressed: boolean) => {
             if (!this._initialized) {
                 return;
@@ -98,5 +119,13 @@ export class HardButtonController {
                 this._releaseEventHandlers[button]?.forEach(cb => cb(button));
             }
         });
+
+        window.CrComLib.subscribeState("boolean", `Csig.Hard_Button_${button}_On_fb}`, (power: boolean) => {
+            this._buttonActiveEventHandlers[button]?.forEach(cb => cb(button, power));
+        })
+    }
+
+    private _handleBrightnessChange(value: number): void {
+        this._brightnessChangeCallbacks.forEach(callback => callback(value));
     }
 }
