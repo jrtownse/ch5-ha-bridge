@@ -1,23 +1,33 @@
 # Crestron CH5/HomeAssistant Bridge
 
 > [!warning]
-> This project is in its early stages and is not yet ready for production use. Code is ugly, things are structured
-> weirdly, nothing is documented, and there are no tests.
-> 
-> **This project is not affiliated with or endorsed by Crestron.** It is very likely that Crestron will not like this
-> project at all, and will probably not support anything we do here. We use a number of undocumented features and 
-> systems that we _probably_ should not be touching.
-> 
-> I *highly* recommend that you do not use this project in a paying client's home, or in any other situation where 
-> someone will get mad if this doesn't work as intended. 
+>
+> **This project is not affiliated with, endorsed by, or supported by Crestron.** It is very likely that Crestron
+> will not like this project at all, and will not support anything done as part of it. This project uses a decent
+> number of undocumented features that are subject to change at any time for any reason.
+>
+> DO NOT USE THIS PROJECT FOR PAYING CLIENTS OR DEPLOY IT IN A PROFESSIONAL ENVIRONMENT. This project makes
+> *absolutely zero promises* as to its stability and reliability, and use in production environments ***will***
+> cause significant trouble when something inevitably breaks. This is NOT a replacement for a properly-configured
+> and competently-programmed Crestron control system.
+
+> [!caution]
+> This project is still under active development, and nothing should be considered stable at this time. Significant
+> work is still necessary before this is ready to use outside of lab settings.
+
+The `ch5-ha-bridge` aims to bridge the gap between Crestron tablets (such as the TSW-xx60 and TSW-xx70 product lines)
+and open smart home projects like Home Assistant. It works standalone, meaning there is no need for a central
+processor or any controlled programming. Everything lives, to the best of its ability, within the context of a
+tablet operating standalone.
 
 This project aims to bridge the gap between Crestron tablets (e.g. the TSW xx60 and xx70 product lines) and Home 
 Assistant, allowing deep integration without needing a control processor or the ability to do custom programming on
-a Crestron system.
+a Crestron system. To this end, this project makes extensive use of [Crestron's CrComLib][crcomlib] to interact with
+the tablet and its joins, and uses MQTT to speak to Home Assistant or any other MQTT consumer. Many of the insights
+in this project came from staring at CrComLib's code and throwing various things at the wall in an attempt to make
+things work.
 
-It leverages [Crestron's CrComLib][crcomlib] to interact with the tablet and its joins, and uses MQTT to speak to Home 
-Assistant(or, realistically, any other consumer that wants MQTT). The initial project was built using 
-[Crestron's React template][ch5-react] and then adapted to make things slightly simpler.
+This project makes use of the [CH5 React TS Template][ch5-react] as its base.
 
 [crcomlib]: https://github.com/Crestron/CH5ComponentLibrary
 [ch5-react]: https://github.com/jphillipsCrestron/ch5-react-ts-template/
