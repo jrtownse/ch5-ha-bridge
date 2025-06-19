@@ -593,5 +593,5 @@ export function installLocalStoragePolyfill(
 }
 
 if (typeof window !== 'undefined' && !window.localStorage && typeof (JSInterface) !== 'undefined') {
-  installLocalStoragePolyfill('ch5_mqtt_bridge');
+  installLocalStoragePolyfill('localStorageShim');
 }
