@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Crestron Cold Boot</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <script>
+        import("./polyfill_localstorage.js").then(() => {
+            window.localStorage.__storage.onDataLoadComplete(() => {
+                console.log(`Data load reported as complete. LocalStorage has ${window.localStorage.length} items...`)
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const urlOrigin = window.location.origin;
+
+                let redirectTo = urlParams.get("redirect_to");
+                if (!redirectTo) {
+                    document.getElementById("status_message").innerText = "No redirect URL provided! Please make sure to include a 'redirect_to' parameter in the URL.";
+                    return;
+                }
+
+                document.getElementById("status_message").innerText = "Data load complete. Redirecting to " + redirectTo;
+                window.location = urlOrigin + redirectTo;
+            });
+        });
+    </script>
+</head>
+<body>
+<h1>Crestron Tablet Cold Boot</h1>
+<p id="status_message">Please wait for polyfill and data load...</p>
+</body>
+</html>

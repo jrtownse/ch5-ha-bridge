@@ -140,7 +140,7 @@ export class LedAccessoryController {
     public setColor(color: string): void {
         let tuple: string;
         if (color.startsWith("#")) {
-            tuple = ColorUtil.colorTupleToHex(color);
+            tuple = ColorUtil.hexColorToTuple(color);
         } else {
             tuple = ColorUtil.namedToTuple(color);
         }

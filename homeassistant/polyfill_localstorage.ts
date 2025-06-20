@@ -18,7 +18,10 @@ export class IndexedDBLocalStorage implements Storage {
   private initialized: boolean = false;
   private pendingOperations: Array<() => Promise<void>> = [];
   private processingOperations: boolean = false;
-  private externalDb: boolean = false;
+  private readonly externalDb: boolean = false;
+
+  private dataLoadCompletedCallbacks: Array<() => void> = [];
+  private dataLoadCompleted: boolean = false;
 
   /**
    * Create a new IndexedDBLocalStorage using either a database name or an existing database
@@ -40,54 +43,58 @@ export class IndexedDBLocalStorage implements Storage {
       
       // Create a unique cache key based on the database and store names
       this.CACHE_KEY = `__indexedDBLocalStorageCache_${this.db.name}_${this.STORE_NAME}`;
+
+      this.initializeDatabaseContext();
     } else {
       this.externalDb = false;
       
       // Create a unique cache key based on the database and store names
       this.CACHE_KEY = `__indexedDBLocalStorageCache_${dbNameOrInstance}_${this.STORE_NAME}`;
       
-      // Initialize the database (background)
-      this.initializeDatabase(dbNameOrInstance);
+      this.setupManagedDatabase(dbNameOrInstance).then(() => {
+        this.initializeDatabaseContext();
+      });
     }
   }
+  
+  private async setupManagedDatabase(dbName: string) {
+    // Open IndexedDB
+    const openRequest = indexedDB.open(dbName);
 
+    openRequest.onupgradeneeded = (event) => {
+      const db = (event.target as IDBOpenDBRequest).result;
+      if (!db.objectStoreNames.contains(this.STORE_NAME)) {
+        db.createObjectStore(this.STORE_NAME);
+      }
+    };
+
+    this.db = await new Promise<IDBDatabase>((resolve, reject) => {
+      openRequest.onsuccess = () => resolve(openRequest.result);
+      openRequest.onerror = () => reject(openRequest.error);
+    });
+  }
+  
   /**
-   * Initialize the IndexedDB database in the background
+   * Initialize the IndexedDB database *context* in the background
    */
-  private initializeDatabase(dbName: string): void {
+  private initializeDatabaseContext(): void {
     // Start the async initialization process
     (async () => {
       try {
-        if (!window.indexedDB) {
-          throw new Error('IndexedDB is not supported in this browser');
-        }
-
-        // Open IndexedDB
-        const openRequest = indexedDB.open(dbName);
-
-        openRequest.onupgradeneeded = (event) => {
-          const db = (event.target as IDBOpenDBRequest).result;
-          if (!db.objectStoreNames.contains(this.STORE_NAME)) {
-            db.createObjectStore(this.STORE_NAME);
-          }
-        };
-
-        this.db = await new Promise<IDBDatabase>((resolve, reject) => {
-          openRequest.onsuccess = () => resolve(openRequest.result);
-          openRequest.onerror = () => reject(openRequest.error);
-        });
-
         // Load all data from IndexedDB into sessionStorage
         await this.syncFromIndexedDB();
+
+        this.dataLoadCompleted = true;
+        this.dataLoadCompletedCallbacks.forEach(callback => callback());
         
         // Mark as initialized and process any operations that were queued
         this.initialized = true;
-        this.processOperationQueue();
+        this.processOperationQueue().then(_ => { /* fire and forget */ });
       } catch (error) {
         console.error('Failed to initialize IndexedDB localStorage polyfill:', error);
         // Even if initialization fails, we still mark as initialized to prevent blocking
         this.initialized = true;
-        this.processOperationQueue();
+        this.processOperationQueue().then(_ => { /* fire and forget */ });
       }
     })().catch(err => {
       console.error('Unexpected error during initialization:', err);
@@ -102,7 +109,7 @@ export class IndexedDBLocalStorage implements Storage {
     
     // If we're already initialized, start processing the queue
     if (this.initialized) {
-      this.processOperationQueue();
+      this.processOperationQueue().then(_ => { /* fire and forget */ });
     }
     // If not initialized, the queue will be processed after initialization completes
   }
@@ -117,8 +124,9 @@ export class IndexedDBLocalStorage implements Storage {
     }
 
     this.processingOperations = true;
-    
+
     try {
+      // Continue processing until no operations remain
       while (this.pendingOperations.length > 0) {
         const operation = this.pendingOperations.shift();
         if (operation) {
@@ -131,11 +139,6 @@ export class IndexedDBLocalStorage implements Storage {
       console.error('Error processing IndexedDB operations:', error);
     } finally {
       this.processingOperations = false;
-      
-      // Check if new operations were added while we were processing
-      if (this.pendingOperations.length > 0) {
-        this.processOperationQueue();
-      }
     }
   }
 
@@ -177,6 +180,20 @@ export class IndexedDBLocalStorage implements Storage {
   }
 
   /**
+   * Register a callback to be executed when IndexedDB sync is complete
+   * If sync has already completed, the callback will be executed immediately
+   * @param callback Function to call when sync is complete
+   * @returns Function to unregister the callback
+   */
+  public onDataLoadComplete(callback: () => void): void {
+    if (this.dataLoadCompleted) {
+      setTimeout(() => callback(), 0);
+    }
+
+    this.dataLoadCompletedCallbacks.push(callback);
+  }
+
+  /**
    * Sync all data from IndexedDB to sessionStorage
    * This is internal and only used during initialization
    */
@@ -205,8 +222,7 @@ export class IndexedDBLocalStorage implements Storage {
       const cache: Record<string, string> = this.getCache(); // Start with existing cache
       for (let i = 0; i < keys.length; i++) {
         const key = keys[i].toString();
-        const value = values[i]?.toString() || '';
-        cache[key] = value;
+        cache[key] = values[i]?.toString() || '';
       }
       
       // Update sessionStorage
@@ -590,6 +606,12 @@ export function installLocalStoragePolyfill(
     writable: false,
     configurable: true
   });
+
+  if (window.localStorage != null) {
+    console.info("LocalStorage polyfill installed successfully.");
+  } else {
+    console.error("Failed to install LocalStorage polyfill?!");
+  }
 }
 
 if (typeof window !== 'undefined' && !window.localStorage && typeof (JSInterface) !== 'undefined') {
