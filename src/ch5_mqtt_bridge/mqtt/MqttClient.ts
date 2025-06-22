@@ -7,7 +7,7 @@ import {MqttRouter} from "./MqttRouter.ts";
 
 
 @injectable("Singleton")
-export default class Ch5MqttClient {
+export default class Ch5MqttConnector {
     private _mqttClient: MqttClient;
     private _baseTopic: string;
 
@@ -28,14 +28,14 @@ export default class Ch5MqttClient {
 
     private _onConnect() {
         this._baseTopic = `crestron/ch5_mqtt/${DeviceInfo.getModelNumber()}_${DeviceInfo.getTSID()}`;
-        console.log(`[MqttClient] Connected to MQTT broker. Base topic: ${this._baseTopic}`);
+        console.log(`[MqttConnector] Connected to MQTT broker. Base topic: ${this._baseTopic}`);
         this._mqttClient.subscribe(`${this._baseTopic}/#`, {nl: true});
     }
 
     private _onMessage(topic: string, message: any) {
         try {
             const messageObject = JSON.parse(message.toString());
-            console.log(`[MqttClient] Received message on topic ${topic}:`, messageObject);
+            console.log(`[MqttConnector] Received message on topic ${topic}:`, messageObject);
 
             if (!topic.startsWith(`${this._baseTopic}/`)) {
                 return;
@@ -44,19 +44,19 @@ export default class Ch5MqttClient {
             let cleanedTopic = topic.slice(this._baseTopic.length + 1);
             this._router.handleMessage(cleanedTopic, messageObject);
         } catch (error) {
-            console.error(`[MqttClient] Error processing message on topic ${topic}!`, error, message.toString());
+            console.error(`[MqttConnector] Error processing message on topic ${topic}!`, error, message.toString());
         }
     }
 
     public sendMessage(topic: string, message: any) {
         if (this._baseTopic === undefined) {
-            console.error("[MqttClient] Base topic is not set. Was a connection established?");
+            console.error("[MqttConnector] Base topic is not set. Was a connection established?");
             return;
         }
 
         const fullTopic = `${this._baseTopic}/${topic}`
         this._mqttClient.publish(fullTopic, JSON.stringify(message));
-        console.log(`[MqttClient] Sent message on topic ${topic}:`, message);
+        console.log(`[MqttConnector] Sent message on topic ${topic}:`, message);
     }
 
     public registerRoute(topicSpec: string, handler: RouteCallback) {

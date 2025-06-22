@@ -1,5 +1,5 @@
 import {injectable, inject} from "inversify";
-import Ch5MqttClient from "../mqtt/MqttClient.ts";
+import Ch5MqttConnector from "../mqtt/MqttClient.ts";
 
 import {SignalRegistrationRecord} from "../interop/CrestronTypes.ts";
 import {HardButtonController, TouchPanelHardButton} from "../interop/controllers/HardButtonController.ts";
@@ -7,11 +7,11 @@ import {HardButtonController, TouchPanelHardButton} from "../interop/controllers
 @injectable("Singleton")
 export class HardButtonService {
 
-    private _mqttClient: Ch5MqttClient;
+    private _mqttClient: Ch5MqttConnector;
     private _hardButtonController: HardButtonController;
 
     private constructor(
-        @inject(Ch5MqttClient) mqttClient: Ch5MqttClient,
+        @inject(Ch5MqttConnector) mqttClient: Ch5MqttConnector,
         @inject(HardButtonController) hardButtonController: HardButtonController
     ) {
         this._mqttClient = mqttClient;

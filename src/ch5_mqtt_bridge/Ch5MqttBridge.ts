@@ -3,7 +3,7 @@ import {Container} from "inversify";
 import {HardButtonService} from "./services/HardButtonService.ts";
 import {JoinProxyService} from "./services/JoinProxyService.ts";
 import { LedAccessoryController } from "./interop/controllers/LedAccessoryController.ts";
-import Ch5MqttClient from "./mqtt/MqttClient.ts";
+import Ch5MqttConnector from "./mqtt/MqttClient.ts";
 import {HardButtonController} from "./interop/controllers/HardButtonController.ts";
 import {LedAccessoryService} from "./services/LedAccessoryService.ts";
 
@@ -17,7 +17,7 @@ export class Ch5MqttBridge {
     private _ledAccessoryService: LedAccessoryService | undefined;
 
     private constructor() {
-        this._diContainer.bind(Ch5MqttClient).toSelf().inSingletonScope();
+        this._diContainer.bind(Ch5MqttConnector).toSelf().inSingletonScope();
 
         this._diContainer.bind(HardButtonController).toSelf().inSingletonScope();
         this._diContainer.bind(LedAccessoryController).toSelf().inSingletonScope();

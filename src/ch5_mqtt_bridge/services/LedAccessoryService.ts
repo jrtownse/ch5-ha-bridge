@@ -1,5 +1,5 @@
 import { injectable, inject } from "inversify";
-import Ch5MqttClient from "../mqtt/MqttClient.ts";
+import Ch5MqttConnector from "../mqtt/MqttClient.ts";
 
 import { LedAccessoryController} from "../interop/controllers/LedAccessoryController.ts";
 
@@ -8,7 +8,7 @@ export class LedAccessoryService {
 
     constructor(
         @inject(LedAccessoryController) public ledAccessoryController: LedAccessoryController,
-        @inject(Ch5MqttClient) public mqttClient: Ch5MqttClient
+        @inject(Ch5MqttConnector) public mqttClient: Ch5MqttConnector
     ) {
         this.mqttClient.connectCallback(() => {
             this.mqttClient.sendMessage("ledAccessory/available", this.ledAccessoryController.hasAccessory, { retain: true });

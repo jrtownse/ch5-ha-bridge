@@ -17,35 +17,16 @@ export class LedAccessoryController {
             this._notifyLedStateChange();
         });
 
-        // note: these will immediately trigger the callback.
-        window.CrComLib.subscribeState("boolean", "Csig.RedLedControl_fb", (s: boolean) => {
-            this._cachedChannelPower[0] = s;
-            f_debounceNotify();
+        ["Csig.RedLedControl_fb", "Csig.GreenLedControl_fb", "Csig.BlueLedControl_fb"].forEach(signal => {
+            window.CrComLib.subscribeState("boolean", signal, (s: boolean) => {
+                f_debounceNotify();
+            });
         });
 
-        window.CrComLib.subscribeState("boolean", "Csig.GreenLedControl_fb", (s: boolean) => {
-            this._cachedChannelPower[1] = s;
-            f_debounceNotify();
-        });
-
-        window.CrComLib.subscribeState("boolean", "Csig.BlueLedControl_fb", (s: boolean) => {
-            this._cachedChannelPower[2] = s;
-            f_debounceNotify();
-        })
-
-        window.CrComLib.subscribeState("number", "Csig.RedLedBrightness_fb", (s: number) => {
-            this._cachedLedChannels[0] = s;
-            f_debounceNotify();
-        });
-
-        window.CrComLib.subscribeState("number", "Csig.GreenLedBrightness_fb", (s: number) => {
-            this._cachedLedChannels[1] = s;
-            f_debounceNotify();
-        });
-
-        window.CrComLib.subscribeState("number", "Csig.BlueLedBrightness_fb", (s: number) => {
-            this._cachedLedChannels[2] = s;
-            f_debounceNotify();
+        ["Csig.RedLedBrightness_fb", "Csig.GreenLedBrightness_fb", "Csig.BlueLedBrightness_fb"].forEach(signal => {
+            window.CrComLib.subscribeState("number", signal, (s: number) => {
+                f_debounceNotify();
+            });
         });
     }
 
@@ -54,8 +35,6 @@ export class LedAccessoryController {
     /* Crestron cached state tracking */
 
     private _hasAccessory: boolean = true;
-    private _cachedLedChannels: ColorTuple = [0, 0, 0];
-    private _cachedChannelPower: [red: boolean, green: boolean, blue: boolean] = [false, false, false];
 
     /* Internal state tracking */
 
@@ -63,14 +42,18 @@ export class LedAccessoryController {
 
     /* Getters/setters */
 
-    public get hasAccessory(): boolean { return this._hasAccessory; }
+    public get hasAccessory(): boolean {
+        return this._hasAccessory;
+    }
 
     public get power(): boolean {
         if (!this._hasAccessory) {
             return false;
         }
 
-        return this._cachedChannelPower[0] || this._cachedChannelPower[1] || this._cachedChannelPower[2];
+        return window.CrComLib.getBooleanSignalValue("Csig.RedLedControl_fb") ||
+            window.CrComLib.getBooleanSignalValue("Csig.GreenLedControl_fb") ||
+            window.CrComLib.getBooleanSignalValue("Csig.BlueLedControl_fb");
     }
 
     public set power(value: boolean): void {
@@ -91,7 +74,7 @@ export class LedAccessoryController {
             return 0;
         }
 
-        return Math.max(...this._cachedLedChannels);
+        return Math.max(...this.color);
     }
 
     public set brightness(value: number) {
@@ -100,11 +83,12 @@ export class LedAccessoryController {
         }
 
         let scaleFactor = MathUtil.clamp(value, 0, LedAccessoryController.MAX_LED_BRIGHTNESS) / currentBrightness;
+        let currentColor = this.color;
 
         this.color = [
-            Math.min(Math.round(this._cachedLedChannels[0] * scaleFactor), LedAccessoryController.MAX_LED_BRIGHTNESS),
-            Math.min(Math.round(this._cachedLedChannels[1] * scaleFactor), LedAccessoryController.MAX_LED_BRIGHTNESS),
-            Math.min(Math.round(this._cachedLedChannels[2] * scaleFactor), LedAccessoryController.MAX_LED_BRIGHTNESS)
+            Math.min(Math.round(currentColor[0] * scaleFactor), LedAccessoryController.MAX_LED_BRIGHTNESS),
+            Math.min(Math.round(currentColor[1] * scaleFactor), LedAccessoryController.MAX_LED_BRIGHTNESS),
+            Math.min(Math.round(currentColor[2] * scaleFactor), LedAccessoryController.MAX_LED_BRIGHTNESS)
         ];
     }
 
@@ -117,9 +101,9 @@ export class LedAccessoryController {
         }
 
         return [
-            this._cachedLedChannels[0],
-            this._cachedLedChannels[1],
-            this._cachedLedChannels[2]
+            window.CrComLib.getNumericSignalValue("Csig.RedLedBrightness_fb", 0),
+            window.CrComLib.getNumericSignalValue("Csig.GreenLedBrightness_fb", 0),
+            window.CrComLib.getNumericSignalValue("Csig.BlueLedBrightness_fb", 0)
         ];
     }
 
@@ -156,7 +140,9 @@ export class LedAccessoryController {
      * Check if the LED accessory has a consistent power state across all channels.
      */
     private _isPowerStateConsistent(): boolean {
-        return (this._cachedChannelPower[0] === this._cachedLedChannels[1] === this._cachedChannelPower[2]);
+        return window.CrComLib.getBooleanSignalValue("Csig.RedLedControl_fb") ===
+            window.CrComLib.getBooleanSignalValue("Csig.GreenLedControl_fb") ===
+            window.CrComLib.getBooleanSignalValue("Csig.BlueLedControl_fb");
     }
 
     private _notifyLedStateChange(): void {

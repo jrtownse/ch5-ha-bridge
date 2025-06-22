@@ -1,6 +1,6 @@
 import {injectable, inject} from "inversify";
 
-import Ch5MqttClient from "../mqtt/MqttClient.ts";
+import Ch5MqttConnector from "../mqtt/MqttClient.ts";
 
 import {TSignalNonStandardTypeName} from "@crestron/ch5-crcomlib/build_bundles/umd/@types/ch5-core/types/core";
 import {SignalRegistrationRecord} from "../interop/CrestronTypes.ts";
@@ -8,10 +8,10 @@ import {SignalRegistrationRecord} from "../interop/CrestronTypes.ts";
 @injectable("Singleton")
 export class JoinProxyService {
 
-    private _mqttClient: Ch5MqttClient;
+    private _mqttClient: Ch5MqttConnector;
     private _subscribedSignals: SignalRegistrationRecord[] = [];
 
-    private constructor(@inject(Ch5MqttClient) mqttClient: Ch5MqttClient) {
+    private constructor(@inject(Ch5MqttConnector) mqttClient: Ch5MqttConnector) {
         this._mqttClient = mqttClient;
 
         this._mqttClient.connectCallback(() => {
