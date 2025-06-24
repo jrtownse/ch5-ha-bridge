@@ -9,7 +9,7 @@ export class AmbientLightController {
     private _ambientLightLevelChangeCallbacks: ((level: number) => void)[] = [];
 
     public get ambientLightLevel(): number {
-        return window.CrComLib.getNumericSignalValue("Csig.Light_Sensor_Value_fb", 0);
+        return window.CrComLib.getNumericSignalValue("Csig.Light_Sensor_Value_fb") || 0;
     }
 
     public onAmbientLightLevelChange(callback: (level: number) => void): void {

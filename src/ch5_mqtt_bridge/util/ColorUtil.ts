@@ -2,7 +2,7 @@ export type ColorTuple = [red: number, green: number, blue: number];
 
 export class ColorUtil {
     public static namedToTuple(color: string): ColorTuple {
-        let el = document.createElement("canvas").getContext("2d");
+        let el = document.createElement("canvas").getContext("2d")!;
         el.fillStyle = color;
 
         return this.hexColorToTuple(el.fillStyle);
@@ -10,6 +10,11 @@ export class ColorUtil {
 
     public static hexColorToTuple(color: string): ColorTuple {
         let regex = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(color);
+
+        if (!regex) {
+            throw new Error(`Invalid hex color format: ${color}`);
+        }
+
         return [parseInt(regex[1], 16), parseInt(regex[2], 16), parseInt(regex[3], 16)];
     }
 

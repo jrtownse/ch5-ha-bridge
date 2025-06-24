@@ -1,22 +1,14 @@
 import {inject, injectable} from "inversify";
 import {DisplayController} from "../interop/controllers/DisplayController.ts";
 import {HardButtonController, TouchPanelHardButton} from "../interop/controllers/HardButtonController.ts";
-import Ch5MqttConnector from "../mqtt/MqttClient.ts";
 
 // TODO: This really should not be in the bridge library.
 @injectable("Singleton")
 export class PowerButtonBehavior {
-
-    private _displayController: DisplayController;
-    private _hardButtonController: HardButtonController;
-
     constructor(
         @inject(DisplayController) private displayController: DisplayController,
         @inject(HardButtonController) private hardButtonController: HardButtonController
     ) {
-        this._displayController = displayController;
-        this._hardButtonController = hardButtonController;
-
         this.hardButtonController.onButtonPress(TouchPanelHardButton.BUTTON_POWER, this._handlePowerButtonPress.bind(this));
         this.hardButtonController.onButtonHold(TouchPanelHardButton.BUTTON_POWER, 2000, this._handlePowerButtonHold.bind(this));
 

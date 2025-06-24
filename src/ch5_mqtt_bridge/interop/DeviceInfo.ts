@@ -52,4 +52,5 @@ export class DeviceInfo {
     }
 }
 
+// @ts-ignore
 window.CH5DeviceInfo = DeviceInfo;

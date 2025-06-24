@@ -1,7 +1,6 @@
 import {injectable, inject} from "inversify";
 import Ch5MqttConnector from "../mqtt/MqttClient.ts";
 
-import {SignalRegistrationRecord} from "../interop/CrestronTypes.ts";
 import {HardButtonController, TouchPanelHardButton} from "../interop/controllers/HardButtonController.ts";
 
 @injectable("Singleton")
@@ -33,7 +32,7 @@ export class HardButtonService {
         console.log(`[HardButtonService] Button ${buttonName} pressed.`);
     }
 
-    private _onButtonRelease(button: TouchPanelHardButton, _: number): void {
+    private _onButtonRelease(button: TouchPanelHardButton, _: number | null): void {
         let buttonName = TouchPanelHardButton[button];
 
         this._mqttClient.sendMessage(`hardButton/${buttonName}/press`, false);
@@ -60,10 +59,10 @@ export class HardButtonService {
         }
 
         let button: TouchPanelHardButton;
-        if (isNaN(buttonKey)) {
+        if (isNaN(Number(buttonKey))) {
             button = TouchPanelHardButton[buttonKey as keyof typeof TouchPanelHardButton];
         } else {
-            button = buttonKey as TouchPanelHardButton;
+            button = Number(buttonKey) as TouchPanelHardButton;
         }
 
         if (button === undefined) {
@@ -74,7 +73,7 @@ export class HardButtonService {
         this._hardButtonController.setButtonLedPower(button, message);
     }
 
-    private _setButtonBrightness(topic: string, message: any, params?: Record<string, string>): void {
+    private _setButtonBrightness(topic: string, message: any, _params?: Record<string, string>): void {
         if (typeof message !== "number" || message < 0 || message > 65535) {
             console.warn(`[HardButtonService] Invalid brightness value for ${topic}:`, message);
             return;

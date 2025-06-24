@@ -14,7 +14,7 @@ export class DisplayController {
     private _backlightBrightnessChangeCallbacks: BrightnessChangeCallback[] = [];
 
     public get backlightPower() : boolean {
-        return window.CrComLib.getBooleanSignalValue("Csig.Backlight_On_fb");
+        return window.CrComLib.getBooleanSignalValue("Csig.Backlight_On_fb") || false;
     }
 
     public set backlightPower(value: boolean) {
@@ -22,7 +22,7 @@ export class DisplayController {
     }
 
     public get backlightBrightness() : number {
-        return window.CrComLib.getNumericSignalValue("Csig.Lcd_Brt_fb", 0);
+        return window.CrComLib.getNumericSignalValue("Csig.Lcd_Brt_fb") || 0;
     }
 
     public set backlightBrightness(value: number) {

@@ -4,12 +4,12 @@ import {ColorTuple, ColorUtil} from "../../util/ColorUtil.ts";
 import {MathUtil} from "../../util/MathUtil.ts";
 import {InputUtil} from "../../util/InputUtil.ts";
 
-export type LedStateChangeCallback = (color: ColorTuple) => void;
+export type LedStateChangeCallback = (color?: ColorTuple) => void;
 
 @injectable("Singleton")
 export class LedAccessoryController {
     constructor() {
-        window.CrComLib.subscribeState("boolean", "Csig.LedAccessoryConnected_fb", (s: boolean) => {
+        window.CrComLib.subscribeState("boolean", "Csig.LedAccessoryConnected_fb", (_: boolean) => {
             // this._hasAccessory = s;
         });
 
@@ -18,13 +18,13 @@ export class LedAccessoryController {
         });
 
         ["Csig.RedLedControl_fb", "Csig.GreenLedControl_fb", "Csig.BlueLedControl_fb"].forEach(signal => {
-            window.CrComLib.subscribeState("boolean", signal, (s: boolean) => {
+            window.CrComLib.subscribeState("boolean", signal, (_: boolean) => {
                 f_debounceNotify();
             });
         });
 
         ["Csig.RedLedBrightness_fb", "Csig.GreenLedBrightness_fb", "Csig.BlueLedBrightness_fb"].forEach(signal => {
-            window.CrComLib.subscribeState("number", signal, (s: number) => {
+            window.CrComLib.subscribeState("number", signal, (_: number) => {
                 f_debounceNotify();
             });
         });
@@ -53,10 +53,10 @@ export class LedAccessoryController {
 
         return window.CrComLib.getBooleanSignalValue("Csig.RedLedControl_fb") ||
             window.CrComLib.getBooleanSignalValue("Csig.GreenLedControl_fb") ||
-            window.CrComLib.getBooleanSignalValue("Csig.BlueLedControl_fb");
+            window.CrComLib.getBooleanSignalValue("Csig.BlueLedControl_fb") || false;
     }
 
-    public set power(value: boolean): void {
+    public set power(value: boolean) {
         if (!this._hasAccessory) {
             return;
         }
@@ -74,7 +74,7 @@ export class LedAccessoryController {
             return 0;
         }
 
-        return Math.max(...this.color);
+        return Math.max(...this.color!);
     }
 
     public set brightness(value: number) {
@@ -82,13 +82,13 @@ export class LedAccessoryController {
             return;
         }
 
-        let scaleFactor = MathUtil.clamp(value, 0, LedAccessoryController.MAX_LED_BRIGHTNESS) / currentBrightness;
+        let scaleFactor = MathUtil.clamp(value, 0, LedAccessoryController.MAX_LED_BRIGHTNESS) / this.brightness;
         let currentColor = this.color;
 
         this.color = [
-            Math.min(Math.round(currentColor[0] * scaleFactor), LedAccessoryController.MAX_LED_BRIGHTNESS),
-            Math.min(Math.round(currentColor[1] * scaleFactor), LedAccessoryController.MAX_LED_BRIGHTNESS),
-            Math.min(Math.round(currentColor[2] * scaleFactor), LedAccessoryController.MAX_LED_BRIGHTNESS)
+            Math.min(Math.round(currentColor![0] * scaleFactor), LedAccessoryController.MAX_LED_BRIGHTNESS),
+            Math.min(Math.round(currentColor![1] * scaleFactor), LedAccessoryController.MAX_LED_BRIGHTNESS),
+            Math.min(Math.round(currentColor![2] * scaleFactor), LedAccessoryController.MAX_LED_BRIGHTNESS)
         ];
     }
 
@@ -101,9 +101,9 @@ export class LedAccessoryController {
         }
 
         return [
-            window.CrComLib.getNumericSignalValue("Csig.RedLedBrightness_fb", 0),
-            window.CrComLib.getNumericSignalValue("Csig.GreenLedBrightness_fb", 0),
-            window.CrComLib.getNumericSignalValue("Csig.BlueLedBrightness_fb", 0)
+            window.CrComLib.getNumericSignalValue("Csig.RedLedBrightness_fb") || 0,
+            window.CrComLib.getNumericSignalValue("Csig.GreenLedBrightness_fb") || 0,
+            window.CrComLib.getNumericSignalValue("Csig.BlueLedBrightness_fb") || 0
         ];
     }
 
@@ -122,7 +122,7 @@ export class LedAccessoryController {
      * @param color A color hex or name to apply to the LED accessory.
      */
     public setColor(color: string): void {
-        let tuple: string;
+        let tuple: ColorTuple;
         if (color.startsWith("#")) {
             tuple = ColorUtil.hexColorToTuple(color);
         } else {
@@ -136,16 +136,7 @@ export class LedAccessoryController {
         this._ledStateChangeCallbacks.push(callback);
     }
 
-    /**
-     * Check if the LED accessory has a consistent power state across all channels.
-     */
-    private _isPowerStateConsistent(): boolean {
-        return window.CrComLib.getBooleanSignalValue("Csig.RedLedControl_fb") ===
-            window.CrComLib.getBooleanSignalValue("Csig.GreenLedControl_fb") ===
-            window.CrComLib.getBooleanSignalValue("Csig.BlueLedControl_fb");
-    }
-
     private _notifyLedStateChange(): void {
-        this._ledStateChangeCallbacks.forEach(callback => callback());
+        this._ledStateChangeCallbacks.forEach(callback => callback(this.color!));
     }
 }

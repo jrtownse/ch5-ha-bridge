@@ -13,6 +13,6 @@ export class SipController {
     }
 
     public get sipConnected(): boolean {
-        return window.CrComLib.getBooleanSignalValue("Csig.SipConnected_fb");
+        return window.CrComLib.getBooleanSignalValue("Csig.SipConnected_fb") || false;
     }
 }

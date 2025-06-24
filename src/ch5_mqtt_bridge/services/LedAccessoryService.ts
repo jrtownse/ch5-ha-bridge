@@ -24,7 +24,9 @@ export class LedAccessoryService {
 
     private _onLedStateChange(): void {
         const color = this.ledAccessoryController.color;
-        this.mqttClient.sendMessage("ledAccessory/color", {r: color[0], g: color[1], b: color[2]});
+        if (color) {
+            this.mqttClient.sendMessage("ledAccessory/color", {r: color[0], g: color[1], b: color[2]});
+        }
 
         const brightness = this.ledAccessoryController.brightness;
         this.mqttClient.sendMessage("ledAccessory/brightness", brightness);
@@ -33,7 +35,7 @@ export class LedAccessoryService {
         this.mqttClient.sendMessage("ledAccessory/power", power);
     }
 
-    private setLedColor(topic: string, message: any, params?: Record<string, string>): void {
+    private setLedColor(_topic: string, message: any, _params?: Record<string, string>): void {
         if (typeof message === "object" && message.r !== undefined && message.g !== undefined && message.b !== undefined) {
             this.ledAccessoryController.color = [message.r, message.g, message.b];
         } else if (typeof message === "string") {
@@ -45,7 +47,7 @@ export class LedAccessoryService {
         }
     }
 
-    private setLedBrightness(topic: string, message: any, params?: Record<string, string>): void {
+    private setLedBrightness(_topic: string, message: any, _params?: Record<string, string>): void {
         if (typeof message === "number") {
             this.ledAccessoryController.brightness = message;
         } else {
@@ -53,7 +55,7 @@ export class LedAccessoryService {
         }
     }
 
-    private setLedPower(topic: string, message: any, params?: Record<string, string>): void {
+    private setLedPower(_topic: string, message: any, _params?: Record<string, string>): void {
         if (typeof message === "boolean") {
             this.ledAccessoryController.power = message;
         } else {

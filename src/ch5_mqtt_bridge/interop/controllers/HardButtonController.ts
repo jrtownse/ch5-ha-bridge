@@ -1,4 +1,5 @@
 import {injectable} from 'inversify';
+import {EnumUtil} from "../../util/EnumUtil.ts";
 
 export enum TouchPanelHardButton {
     BUTTON_POWER = 1,
@@ -9,7 +10,7 @@ export enum TouchPanelHardButton {
 }
 
 export type HardButtonPressDelegate = (button: TouchPanelHardButton) => void;
-export type HardButtonReleaseDelegate = (button: TouchPanelHardButton, millisHeld: number) => void;
+export type HardButtonReleaseDelegate = (button: TouchPanelHardButton, millisHeld: number | null) => void;
 export type HardButtonBrightnessChangeDelegate = (value: number) => void;
 export type HardButtonActiveDelegate = (button: TouchPanelHardButton, active: boolean) => void;
 
@@ -30,13 +31,13 @@ export class HardButtonController {
     }
 
     private _initialized: boolean = false;
-    private _pressEventHandlers: { [key in keyof typeof TouchPanelHardButton]?: HardButtonPressDelegate[] } = {};
+    private _pressEventHandlers: { [key in TouchPanelHardButton]?: HardButtonPressDelegate[] } = {};
     private _releaseEventHandlers: { [key in TouchPanelHardButton]?: HardButtonReleaseDelegate[] } = {};
     private _buttonActiveEventHandlers: { [key in TouchPanelHardButton]?: HardButtonActiveDelegate[] } = {};
     private _brightnessChangeCallbacks : HardButtonBrightnessChangeDelegate[] = [];
 
-    private _buttonHoldStates = new Map<TouchPanelHardButton, Stopwatch>();
-    private _buttonHoldTimeouts : { [key in keyof typeof TouchPanelHardButton]?: NodeJS.Timeout[] } = {};
+    private _buttonHoldStates = new Map<TouchPanelHardButton, number>();
+    private _buttonHoldTimeouts : { [key in TouchPanelHardButton]?: NodeJS.Timeout[] } = {};
 
     public onButtonPress(button: TouchPanelHardButton, callback: HardButtonPressDelegate): void {
         this._pressEventHandlers[button] ||= [];
@@ -44,7 +45,7 @@ export class HardButtonController {
     }
 
     public onAnyButtonPress(callback: HardButtonPressDelegate) {
-        Object.values(TouchPanelHardButton).forEach(button => {
+        EnumUtil.getNumericEnumValues(TouchPanelHardButton).forEach(button => {
             this.onButtonPress(button, callback);
         });
     }
@@ -55,7 +56,7 @@ export class HardButtonController {
     }
 
     public onAnyButtonRelease(callback: HardButtonReleaseDelegate) {
-        Object.values(TouchPanelHardButton).forEach(button => {
+        EnumUtil.getNumericEnumValues(TouchPanelHardButton).forEach(button => {
             this.onButtonRelease(button, callback);
         });
     }
@@ -66,9 +67,9 @@ export class HardButtonController {
     }
 
     public onAnyButtonActiveToggle(callback: HardButtonActiveDelegate) {
-        Object.values(TouchPanelHardButton).forEach(button => {
+        EnumUtil.getNumericEnumValues(TouchPanelHardButton).forEach(button => {
             this.onButtonActiveToggle(button, callback);
-        });
+        })
     }
 
     public onButtonHold(button: TouchPanelHardButton, millisHeld: number = 2_000, callback: HardButtonPressDelegate): void {
@@ -88,7 +89,7 @@ export class HardButtonController {
 
     public getButtonLedPower(button: TouchPanelHardButton): boolean {
         let signal = `Csig.Hard_Button_${button}_On_fb`;
-        return window.CrComLib.getState("boolean", signal) ?? false;
+        return window.CrComLib.getBooleanSignalValue(signal) || false;
     }
 
     public setButtonLedPower(button: TouchPanelHardButton, power: boolean): void {
@@ -97,7 +98,7 @@ export class HardButtonController {
     }
 
     public getButtonLedBrightness(): number {
-        return window.CrComLib.getState("number", "Csig.Hard_Button_Brightness_fb", -1);
+        return window.CrComLib.getNumericSignalValue("Csig.Hard_Button_Brightness_fb") || 0;
     }
 
     public setButtonLedBrightness(value: number): void {
@@ -118,7 +119,7 @@ export class HardButtonController {
 
             if (!pressed) {
                 let holdStartTime = this._buttonHoldStates.get(button);
-                let millisHeld = null;
+                let millisHeld: number | null = null;
                 if (holdStartTime !== undefined) {
                     millisHeld = Date.now() - holdStartTime;
                     this._buttonHoldStates.delete(button);

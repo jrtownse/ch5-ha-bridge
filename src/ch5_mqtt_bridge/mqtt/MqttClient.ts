@@ -1,15 +1,16 @@
 import mqtt from "mqtt";
-import {MqttClient} from "mqtt/mqtt";
+import {IClientSubscribeOptions, MqttClient} from "mqtt/mqtt";
 import {DeviceInfo} from "../interop/DeviceInfo.ts";
 import {injectable} from "inversify";
 import {RouteCallback} from "./router/RouteTypes.ts";
 import {MqttRouter} from "./MqttRouter.ts";
+import {IClientPublishOptions} from "mqtt/lib/client";
 
 
 @injectable("Singleton")
 export default class Ch5MqttConnector {
     private _mqttClient: MqttClient;
-    private _baseTopic: string;
+    private _baseTopic: string | undefined;
 
     private _router: MqttRouter;
 
@@ -29,7 +30,7 @@ export default class Ch5MqttConnector {
     private _onConnect() {
         this._baseTopic = `crestron/ch5_mqtt/${DeviceInfo.getModelNumber()}_${DeviceInfo.getTSID()}`;
         console.log(`[MqttConnector] Connected to MQTT broker. Base topic: ${this._baseTopic}`);
-        this._mqttClient.subscribe(`${this._baseTopic}/#`, {nl: true});
+        this._mqttClient.subscribe(`${this._baseTopic}/#`, { nl: true } as IClientSubscribeOptions);
     }
 
     private _onMessage(topic: string, message: any) {
@@ -37,25 +38,25 @@ export default class Ch5MqttConnector {
             const messageObject = JSON.parse(message.toString());
             console.log(`[MqttConnector] Received message on topic ${topic}:`, messageObject);
 
-            if (!topic.startsWith(`${this._baseTopic}/`)) {
+            if (!topic.startsWith(`${this._baseTopic!}/`)) {
                 return;
             }
 
-            let cleanedTopic = topic.slice(this._baseTopic.length + 1);
+            let cleanedTopic = topic.slice(this._baseTopic!.length + 1);
             this._router.handleMessage(cleanedTopic, messageObject);
         } catch (error) {
             console.error(`[MqttConnector] Error processing message on topic ${topic}!`, error, message.toString());
         }
     }
 
-    public sendMessage(topic: string, message: any) {
+    public sendMessage(topic: string, message: any, args?: IClientPublishOptions) {
         if (this._baseTopic === undefined) {
             console.error("[MqttConnector] Base topic is not set. Was a connection established?");
             return;
         }
 
         const fullTopic = `${this._baseTopic}/${topic}`
-        this._mqttClient.publish(fullTopic, JSON.stringify(message));
+        this._mqttClient.publish(fullTopic, JSON.stringify(message), args);
         console.log(`[MqttConnector] Sent message on topic ${topic}:`, message);
     }
 

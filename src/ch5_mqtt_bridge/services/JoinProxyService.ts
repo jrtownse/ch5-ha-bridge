@@ -3,7 +3,8 @@ import {injectable, inject} from "inversify";
 import Ch5MqttConnector from "../mqtt/MqttClient.ts";
 
 import {TSignalNonStandardTypeName} from "@crestron/ch5-crcomlib/build_bundles/umd/@types/ch5-core/types/core";
-import {SignalRegistrationRecord} from "../interop/CrestronTypes.ts";
+import {CrestronSignalBag, SignalRegistrationRecord} from "../interop/CrestronTypes.ts";
+import {TSignalsSubscriptionsByType} from "@crestron/ch5-crcomlib/build_bundles/amd/@types";
 
 @injectable("Singleton")
 export class JoinProxyService {
@@ -25,7 +26,7 @@ export class JoinProxyService {
 
     }
 
-    public subscribeSignal(topic: string, message: any, params?: Record<string, string>): void {
+    public subscribeSignal(topic: string, _message: any, params?: Record<string, string>): void {
         if (!params || !params.type || !params.name) {
             console.error(`[JoinProxyService] Invalid topic format: ${topic}`);
             return;
@@ -34,7 +35,7 @@ export class JoinProxyService {
         this._subscribeSignalInner(params.type as TSignalNonStandardTypeName, params.name);
     }
 
-    public unsubscribeSignal(topic: string, message: any, params?: Record<string, string>): void {
+    public unsubscribeSignal(topic: string, _message: any, params?: Record<string, string>): void {
         if (!params || !params.type || !params.name) {
             console.error(`[JoinProxyService] Invalid topic format: ${topic}`);
             return;
@@ -58,8 +59,8 @@ export class JoinProxyService {
         window.CrComLib.publishEvent(signalType, signalName, message);
     }
 
-    public subscribeAllSignals(topic: string, message: any, params?: Record<string, string>): void {
-        const subscriptions = window.CrComLib.getSubscriptionsCount();
+    public subscribeAllSignals(_topic: string, _message: any, _params?: Record<string, string>): void {
+        const subscriptions = window.CrComLib.getSubscriptionsCount() as TSignalsSubscriptionsByType;
         Object.values(subscriptions).forEach(bag => {
             Object.values(bag).forEach(signal => {
                 this._subscribeSignalInner(signal.type, signal.name);
@@ -102,9 +103,9 @@ export class JoinProxyService {
     }
 
     private _prepopulateSignals(): void {
-        const subscriptions = window.CrComLib.getSubscriptionsCount();
+        const subscriptions = window.CrComLib.getSubscriptionsCount() as CrestronSignalBag;
         Object.values(subscriptions).forEach(bag => {
-            Object.values(bag).forEach(signal => {
+            Object.values(bag).forEach(signal  => {
                 let subResult = this._subscribeSignalInner(signal.type, signal.name);
                 if (!subResult) {
                     console.warn(`[JoinProxyService] Signal ${signal.type}/${signal.name} already subscribed!`);

@@ -1,10 +1,10 @@
 import {RouteEntry} from "./router/RouteEntry.ts";
-import {RouteResult} from "./router/RouteTypes.ts";
+import {RouteCallback, RouteResult} from "./router/RouteTypes.ts";
 
 export class MqttRouter {
     private _routes: RouteEntry[] = [];
 
-    public registerRoute(topic: string, handler: RouteHandler) {
+    public registerRoute(topic: string, handler: RouteCallback): void {
         this._routes.push(new RouteEntry(topic, handler));
     }
 

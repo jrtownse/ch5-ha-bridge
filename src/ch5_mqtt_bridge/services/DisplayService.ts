@@ -19,7 +19,7 @@ export class DisplayService {
         this.mqttClient.registerRoute("display/brightness", this.setDisplayBrightness.bind(this));
     }
 
-    private setDisplayPower(topic: string, message: any, params?: Record<string, string>): void {
+    private setDisplayPower(_topic: string, message: any, _params?: Record<string, string>): void {
         if (typeof message === "boolean") {
             this.displayController.backlightPower = message;
         } else {
@@ -32,7 +32,7 @@ export class DisplayService {
         console.log("[DisplayService] Display power state changed:", newState);
     }
 
-    private setDisplayBrightness(topic: string, message: any, params?: Record<string, string>): void {
+    private setDisplayBrightness(_topic: string, message: any, _params?: Record<string, string>): void {
         if (typeof message === "number") {
             this.displayController.backlightBrightness = message;
         } else {
