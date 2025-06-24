@@ -16,13 +16,13 @@ export class Ch5MqttBridge {
 
     private _initialized: boolean = false;
 
-    private _joinProxyService: JoinProxyService | undefined;
-    private _touchEventService: HardButtonService | undefined;
-    private _ledAccessoryService: LedAccessoryService | undefined;
+    public joinProxyService: JoinProxyService | undefined;
+    public touchEventService: HardButtonService | undefined;
+    public ledAccessoryService: LedAccessoryService | undefined;
 
-    private _powerButtonBehavior: PowerButtonBehavior | undefined;
+    public powerButtonBehavior: PowerButtonBehavior | undefined;
 
-    private constructor() {
+    constructor() {
         this._diContainer.bind(Ch5MqttConnector).toSelf().inSingletonScope();
 
         this._diContainer.bind(AmbientLightController).toSelf().inSingletonScope();
@@ -40,7 +40,7 @@ export class Ch5MqttBridge {
 
     public start() {
         // request a full copy of state as soon as possible, canary on some random very-late signal
-        window.CrComLib.subscribeState("s", "Csig.fb33331", (canary) => {
+        window.CrComLib.subscribeState("s", "Csig.fb33331", (canary: string) => {
             if (this._initialized) {
                 return;
             }
@@ -58,10 +58,10 @@ export class Ch5MqttBridge {
 
     public loadServices() {
         // initialize a new service
-        this._joinProxyService = this._diContainer.get(JoinProxyService);
-        this._touchEventService = this._diContainer.get(HardButtonService);
-        this._ledAccessoryService = this._diContainer.get(LedAccessoryService);
+        this.joinProxyService = this._diContainer.get(JoinProxyService);
+        this.touchEventService = this._diContainer.get(HardButtonService);
+        this.ledAccessoryService = this._diContainer.get(LedAccessoryService);
 
-        this._powerButtonBehavior = this._diContainer.get(PowerButtonBehavior);
+        this.powerButtonBehavior = this._diContainer.get(PowerButtonBehavior);
     }
 }

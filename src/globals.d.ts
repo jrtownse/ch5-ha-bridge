@@ -72,6 +72,7 @@ import { ICh5WifiSignalLevelGaugeAttributes } from "@crestron/ch5-crcomlib/build
 declare global {
   interface Window {
     CrComLib: typeof import("@crestron/ch5-crcomlib/build_bundles/umd/@types/index");
+    Ch5MqttBridgeInstance: import("./ch5_mqtt_bridge/Ch5MqttBridge").Ch5MqttBridge;
   }
 }
 

@@ -1,7 +1,6 @@
 // Uncomment the below line if you are using CH5 components.
 // import '@crestron/ch5-theme/output/themes/light-theme.css' // Crestron CSS. @crestron/ch5-theme/output/themes shows the other themes that can be used.
 import './assets/css/App.css' // Your CSS
-import { useState, useEffect, useMemo } from 'react';
 
 import { Ch5MqttBridge } from "./ch5_mqtt_bridge/Ch5MqttBridge.ts";
 

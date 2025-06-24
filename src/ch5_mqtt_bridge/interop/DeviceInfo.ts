@@ -51,6 +51,3 @@ export class DeviceInfo {
         return window.CrComLib.getStringSignalValue(CSIG_SERIAL_NUMBER, "1234567890");
     }
 }
-
-// @ts-ignore
-window.CH5DeviceInfo = DeviceInfo;
