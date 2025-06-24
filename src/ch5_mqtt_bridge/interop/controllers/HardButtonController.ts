@@ -8,11 +8,10 @@ export enum TouchPanelHardButton {
     BUTTON_DOWN = 5,
 }
 
-export type HardButtonPressCallback = (button: TouchPanelHardButton) => void;
-export type HardButtonReleaseCallback = (button: TouchPanelHardButton) => void;
-export type HardButtonHeldReleasedCallback = (button: TouchPanelHardButton, millisHeld: number) => void;
-export type HardButtonBrightnessChangeCallback = (value: number) => void;
-export type HardButtonActiveCallback = (button: TouchPanelHardButton, active: boolean) => void;
+export type HardButtonPressDelegate = (button: TouchPanelHardButton) => void;
+export type HardButtonReleaseDelegate = (button: TouchPanelHardButton, millisHeld: number) => void;
+export type HardButtonBrightnessChangeDelegate = (value: number) => void;
+export type HardButtonActiveDelegate = (button: TouchPanelHardButton, active: boolean) => void;
 
 
 @injectable("Singleton")
@@ -31,48 +30,59 @@ export class HardButtonController {
     }
 
     private _initialized: boolean = false;
-    private _pressEventHandlers: { [key in TouchPanelHardButton]?: HardButtonPressCallback[] } = {};
-    private _releaseEventHandlers: { [key in TouchPanelHardButton]?: HardButtonReleaseCallback[] } = {};
-    private _heldEventHandlers: { [key in TouchPanelHardButton]?: HardButtonHeldReleasedCallback[] } = {};
-    private _buttonActiveEventHandlers: { [key in TouchPanelHardButton]?: HardButtonActiveCallback[] } = {};
-    private _brightnessChangeCallbacks : HardButtonBrightnessChangeCallback[] = [];
+    private _pressEventHandlers: { [key in keyof typeof TouchPanelHardButton]?: HardButtonPressDelegate[] } = {};
+    private _releaseEventHandlers: { [key in TouchPanelHardButton]?: HardButtonReleaseDelegate[] } = {};
+    private _buttonActiveEventHandlers: { [key in TouchPanelHardButton]?: HardButtonActiveDelegate[] } = {};
+    private _brightnessChangeCallbacks : HardButtonBrightnessChangeDelegate[] = [];
 
     private _buttonHoldStates = new Map<TouchPanelHardButton, Stopwatch>();
+    private _buttonHoldTimeouts : { [key in keyof typeof TouchPanelHardButton]?: NodeJS.Timeout[] } = {};
 
-    public onButtonPress(button: TouchPanelHardButton, callback: HardButtonPressCallback): void {
+    public onButtonPress(button: TouchPanelHardButton, callback: HardButtonPressDelegate): void {
         this._pressEventHandlers[button] ||= [];
         this._pressEventHandlers[button]!.push(callback);
     }
 
-    public onAnyButtonPress(callback: HardButtonPressCallback) {
+    public onAnyButtonPress(callback: HardButtonPressDelegate) {
         Object.values(TouchPanelHardButton).forEach(button => {
             this.onButtonPress(button, callback);
         });
     }
 
-    public onButtonRelease(button: TouchPanelHardButton, callback: HardButtonReleaseCallback): void {
+    public onButtonRelease(button: TouchPanelHardButton, callback: HardButtonReleaseDelegate): void {
         this._releaseEventHandlers[button] ||= [];
         this._releaseEventHandlers[button]!.push(callback);
     }
 
-    public onAnyButtonRelease(callback: HardButtonReleaseCallback) {
+    public onAnyButtonRelease(callback: HardButtonReleaseDelegate) {
         Object.values(TouchPanelHardButton).forEach(button => {
             this.onButtonRelease(button, callback);
         });
     }
 
-    public onButtonActiveToggle(button: TouchPanelHardButton, callback: HardButtonActiveCallback): void {
+    public onButtonActiveToggle(button: TouchPanelHardButton, callback: HardButtonActiveDelegate): void {
         this._buttonActiveEventHandlers[button] ||= [];
         this._buttonActiveEventHandlers[button]!.push(callback);
     }
 
-    public onAnyButtonActiveToggle(callback: HardButtonActiveCallback) {
+    public onAnyButtonActiveToggle(callback: HardButtonActiveDelegate) {
         Object.values(TouchPanelHardButton).forEach(button => {
             this.onButtonActiveToggle(button, callback);
         });
     }
 
-    public onBrightnessChange(callback: HardButtonBrightnessChangeCallback) {
+    public onButtonHold(button: TouchPanelHardButton, millisHeld: number = 2_000, callback: HardButtonPressDelegate): void {
+        let fn = (pButton: TouchPanelHardButton) => {
+            let timer = setTimeout(() => callback(pButton), millisHeld);
+
+            this._buttonHoldTimeouts[pButton] ||= [];
+            this._buttonHoldTimeouts[pButton]!.push(timer);
+        };
+
+        this.onButtonPress(button, fn);
+    }
+
+    public onBrightnessChange(callback: HardButtonBrightnessChangeDelegate) {
         this._brightnessChangeCallbacks.push(callback);
     }
 
@@ -108,15 +118,16 @@ export class HardButtonController {
 
             if (!pressed) {
                 let holdStartTime = this._buttonHoldStates.get(button);
+                let millisHeld = null;
                 if (holdStartTime !== undefined) {
-                    let millisHeld = Date.now() - holdStartTime;
+                    millisHeld = Date.now() - holdStartTime;
                     this._buttonHoldStates.delete(button);
-
-                    // Dispatch held event
-                    this._heldEventHandlers[button]?.forEach(cb => cb(button, millisHeld));
                 }
 
-                this._releaseEventHandlers[button]?.forEach(cb => cb(button));
+                this._releaseEventHandlers[button]?.forEach(cb => cb(button, millisHeld));
+
+                this._buttonHoldTimeouts[button]?.forEach(t => clearTimeout(t));
+                this._buttonHoldTimeouts[button] = [];
             }
         });
 

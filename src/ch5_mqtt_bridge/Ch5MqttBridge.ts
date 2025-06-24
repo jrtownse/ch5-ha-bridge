@@ -2,10 +2,14 @@ import {Container} from "inversify";
 
 import {HardButtonService} from "./services/HardButtonService.ts";
 import {JoinProxyService} from "./services/JoinProxyService.ts";
-import { LedAccessoryController } from "./interop/controllers/LedAccessoryController.ts";
+import {LedAccessoryController} from "./interop/controllers/LedAccessoryController.ts";
 import Ch5MqttConnector from "./mqtt/MqttClient.ts";
 import {HardButtonController} from "./interop/controllers/HardButtonController.ts";
 import {LedAccessoryService} from "./services/LedAccessoryService.ts";
+import {PowerButtonBehavior} from "./behaviors/PowerButtonBehavior.ts";
+import {DisplayController} from "./interop/controllers/DisplayController.ts";
+import {AmbientLightController} from "./interop/controllers/AmbientLightController.ts";
+import {SipController} from "./interop/controllers/SipController.ts";
 
 export class Ch5MqttBridge {
     private _diContainer: Container = new Container();
@@ -16,15 +20,22 @@ export class Ch5MqttBridge {
     private _touchEventService: HardButtonService | undefined;
     private _ledAccessoryService: LedAccessoryService | undefined;
 
+    private _powerButtonBehavior: PowerButtonBehavior | undefined;
+
     private constructor() {
         this._diContainer.bind(Ch5MqttConnector).toSelf().inSingletonScope();
 
+        this._diContainer.bind(AmbientLightController).toSelf().inSingletonScope();
+        this._diContainer.bind(DisplayController).toSelf().inSingletonScope();
         this._diContainer.bind(HardButtonController).toSelf().inSingletonScope();
         this._diContainer.bind(LedAccessoryController).toSelf().inSingletonScope();
+        this._diContainer.bind(SipController).toSelf().inSingletonScope();
 
-        this._diContainer.bind(JoinProxyService).toSelf().inSingletonScope();
         this._diContainer.bind(HardButtonService).toSelf().inSingletonScope();
+        this._diContainer.bind(JoinProxyService).toSelf().inSingletonScope();
         this._diContainer.bind(LedAccessoryService).toSelf().inSingletonScope();
+
+        this._diContainer.bind(PowerButtonBehavior).toSelf().inSingletonScope();
     }
 
     public start() {
@@ -50,5 +61,7 @@ export class Ch5MqttBridge {
         this._joinProxyService = this._diContainer.get(JoinProxyService);
         this._touchEventService = this._diContainer.get(HardButtonService);
         this._ledAccessoryService = this._diContainer.get(LedAccessoryService);
+
+        this._powerButtonBehavior = this._diContainer.get(PowerButtonBehavior);
     }
 }

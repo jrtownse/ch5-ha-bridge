@@ -1,7 +1,7 @@
 import {injectable} from "inversify";
 
 @injectable("Singleton")
-export class DisplayController {
+export class AmbientLightController {
     constructor() {
         window.CrComLib.subscribeState("n", "Csig.Light_Sensor_Value_fb", this._handleAmbientLightChange.bind(this));
     }

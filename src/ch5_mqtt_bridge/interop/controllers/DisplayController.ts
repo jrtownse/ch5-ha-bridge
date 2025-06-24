@@ -35,10 +35,12 @@ export class DisplayController {
 
     public onBacklightPowerChange(callback: BacklightStateCallback) {
         this._backlightPowerChangeCallbacks.push(callback);
+        callback(this.backlightPower);
     }
 
     public onBacklightBrightnessChange(callback: BrightnessChangeCallback) {
         this._backlightBrightnessChangeCallbacks.push(callback);
+        callback(this.backlightBrightness);
     }
 
     private _handleBacklightPowerChange(value: boolean): void {
