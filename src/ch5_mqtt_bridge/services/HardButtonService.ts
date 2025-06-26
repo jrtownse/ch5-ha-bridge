@@ -28,7 +28,7 @@ export class HardButtonService {
     private _onButtonPress(button: TouchPanelHardButton): void {
         let buttonName = TouchPanelHardButton[button];
 
-        this._mqttClient.sendMessage(`hardButtonutton/${buttonName}/press`, true);
+        this._mqttClient.sendMessage(`hardButton/${buttonName}/press`, true);
         console.log(`[HardButtonService] Button ${buttonName} pressed.`);
     }
 
