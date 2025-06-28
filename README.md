@@ -32,12 +32,37 @@ This project makes use of the [CH5 React TS Template][ch5-react] as its base.
 [crcomlib]: https://github.com/Crestron/CH5ComponentLibrary
 [ch5-react]: https://github.com/jphillipsCrestron/ch5-react-ts-template/
 
-## Building
+## Building and Installing
 
 This is a standard Vite project, so just run `yarn install` to install deps, `yarn build:dev` to build the dist files,
 and then `yarn:archive` to generate a .ch5z file.
 
 You will also need to copy `.env.template` to `.env` and fill in any appropriate values for your system.
+
+### Deployment Instructions
+
+At present, there are a few extra required steps to deploy this project in a typical Home Assistant environment. These are
+temporary (sorta) until the bootloader and all relevant code is completed, and are not included in the project pipeline
+because the underyling code is unlikely to change regularly.
+
+1. Compile [`polyfill_localstorage.ts`](./homeassistant/polyfill_localstorage.ts) to JavaScript using your favorite
+   TypeScript compiler.
+1. Place [`coldboot.html`](./homeassistant/coldboot.html) and your compiled `polyfill_localstorage.js` file in `www/crestron`
+   on your HA server.
+3. Define the `VITE_HA_DASHBOARD_URL` as `http://YOUR_HA_HOST/local/crestron/coldboot.html?redirect_to=/your/dashboard/url`
+4. Make the following changes to your HA `configuration.yaml`:
+    ```yml
+    frontend:
+      extra_module_url:
+        - /local/crestron/polyfill_localstorage.js
+    
+    http:
+      use_x_frame_options: false
+    ```
+
+If HTTPS access is desired and a publicly-trusted certificate is not available, you will need to load all relevant certificates
+[on the panel](https://docs.crestron.com/en-us/8989/Content/Topics/Web-Configuration.htm#802.1x_Configuration). Note that HTTPS has
+not been thoroughly tested, and may cause other problems I don't know about yet.
 
 ## Project Direction
 
@@ -47,6 +72,22 @@ tie things in properly. We may need to create a "bootloader" CH5 app that then g
 are many other possible considerations here.
 
 Help is very much welcome here!
+
+### Project Structure
+
+At the moment, the actual integration component is roughly split into three distinct layers:
+
+* The [`interop` layer](./src/ch5_mqtt_bridge/interop/) contains Crestron specific logic and "controllers" that are
+  designed to make the join system more accessible and usable in TypeScript land. It's helpful to consider this layer
+  to be the "drivers" behind the project.
+* The [`services` layer](./src/ch5_mqtt_bridge/services/) exposes Crestron state to the world, either from an interop
+  controller or directly via the CrComLib interface.
+* The [`behaviors` layer](./src/ch5_mqtt_bridge/behaviors) contains on-device business logic to control the tablet and
+  its operation.
+
+Of these layers, `services` is (by design) opinionated to translate things into a Home Assistant and architecturally
+friendly pattern. The `behaviors` layer is *extremely* opinionated and will likely be moved somewhere else in the
+future to allow users to define and control their own logic.
 
 ## MQTT Reference
 
