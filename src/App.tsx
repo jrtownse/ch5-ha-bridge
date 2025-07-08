@@ -3,6 +3,7 @@
 import './assets/css/App.css' // Your CSS
 
 import { Ch5MqttBridge } from "./ch5_mqtt_bridge/Ch5MqttBridge.ts";
+import HomeAssistantIframe from "./components/HomeAssistantIframe.tsx";
 
 // Initialize eruda for panel/app debugging capabilities (in dev mode only)
 if (import.meta.env.DEV) {
@@ -20,9 +21,9 @@ BridgeInstance.start();
 function App() {
   return (
     <>
-      <iframe src={ import.meta.env.VITE_HA_DASHBOARD_URL } style={{ width: `100vw`, height: `100vh` }}/>
+      <HomeAssistantIframe />
     </>
   )
 }
 
-export default App
+export default App;
