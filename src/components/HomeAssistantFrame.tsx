@@ -1,6 +1,6 @@
 import {useState} from "react";
 
-export default function HomeAssistantIframe() {
+export default function HomeAssistantFrame() {
     const [frameUrl, setFrameUrl] = useState<string>(import.meta.env.VITE_HA_DASHBOARD_URL);
     const [frameScale, setFrameScale] = useState<number>(1 / window.devicePixelRatio);
 

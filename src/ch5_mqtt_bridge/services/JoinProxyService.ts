@@ -15,7 +15,7 @@ export class JoinProxyService {
     private constructor(@inject(Ch5MqttConnector) mqttClient: Ch5MqttConnector) {
         this._mqttClient = mqttClient;
 
-        this._mqttClient.connectCallback(() => {
+        this._mqttClient.readyPromise.then(() => {
             this._prepopulateSignals();
         });
 

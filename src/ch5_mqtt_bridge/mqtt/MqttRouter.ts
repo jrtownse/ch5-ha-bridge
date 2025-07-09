@@ -1,11 +1,17 @@
 import {RouteEntry} from "./router/RouteEntry.ts";
-import {RouteCallback, RouteResult} from "./router/RouteTypes.ts";
+import {RouteCallback, RouteResult, RouteUnsubscribeCallback} from "./router/RouteTypes.ts";
 
 export class MqttRouter {
     private _routes: RouteEntry[] = [];
 
-    public registerRoute(topic: string, handler: RouteCallback): void {
-        this._routes.push(new RouteEntry(topic, handler));
+    public registerRoute(topic: string, handler: RouteCallback): RouteUnsubscribeCallback {
+        const route = new RouteEntry(topic, handler);
+        this._routes.push(route);
+
+        return () => {
+            const idx = this._routes.indexOf(route);
+            this._routes.splice(idx);
+        };
     }
 
     public handleMessage(topic: string, message: any) {

@@ -1,16 +1,18 @@
 import mqtt from "mqtt";
 import {IClientSubscribeOptions, MqttClient} from "mqtt/mqtt";
-import {DeviceInfo} from "../interop/DeviceInfo.ts";
 import {injectable} from "inversify";
-import {RouteCallback} from "./router/RouteTypes.ts";
+import {RouteCallback, RouteUnsubscribeCallback} from "./router/RouteTypes.ts";
 import {MqttRouter} from "./MqttRouter.ts";
 import {IClientPublishOptions} from "mqtt/lib/client";
+import ResolvablePromiseSource from "../../util/ResolvablePromiseSource.ts";
 
 
 @injectable("Singleton")
 export default class Ch5MqttConnector {
     private _mqttClient: MqttClient;
     private _baseTopic: string | undefined;
+
+    private _readyPromise = new ResolvablePromiseSource<void>();
 
     private _router: MqttRouter;
 
@@ -28,12 +30,14 @@ export default class Ch5MqttConnector {
     }
 
     private _onConnect() {
-        this._baseTopic = `crestron/ch5_mqtt/${DeviceInfo.getModelNumber()}_${DeviceInfo.getTSID()}`;
-        console.log(`[MqttConnector] Connected to MQTT broker. Base topic: ${this._baseTopic}`);
-        this._mqttClient.subscribe(`${this._baseTopic}/#`, { nl: true } as IClientSubscribeOptions);
+        console.log(`[MqttConnector] Connected to MQTT broker.`);
+
+        if (this._baseTopic) {
+            this._finishConnection();
+        }
     }
 
-    private _onMessage(topic: string, message: any) {
+    private _onMessage(topic: string, message: Buffer) {
         try {
             const messageObject = JSON.parse(message.toString());
             console.log(`[MqttConnector] Received message on topic ${topic}:`, messageObject);
@@ -42,7 +46,7 @@ export default class Ch5MqttConnector {
                 return;
             }
 
-            let cleanedTopic = topic.slice(this._baseTopic!.length + 1);
+            const cleanedTopic = topic.slice(this._baseTopic!.length + 1);
             this._router.handleMessage(cleanedTopic, messageObject);
         } catch (error) {
             console.error(`[MqttConnector] Error processing message on topic ${topic}!`, error, message.toString());
@@ -60,11 +64,26 @@ export default class Ch5MqttConnector {
         console.log(`[MqttConnector] Sent message on topic ${topic}:`, message);
     }
 
-    public registerRoute(topicSpec: string, handler: RouteCallback) {
-        this._router.registerRoute(topicSpec, handler);
+    public registerRoute(topicSpec: string, handler: RouteCallback) : RouteUnsubscribeCallback {
+        return this._router.registerRoute(topicSpec, handler);
     }
 
-    public connectCallback(callback: () => void) {
-        this._mqttClient.on("connect", callback);
+    public get readyPromise() { return this._readyPromise.promise; }
+
+    public setBaseTopic(topic: string) {
+        if (this._baseTopic !== undefined) {
+            console.error("Base topic already set!");
+            return;
+        }
+
+        this._baseTopic = topic;
+        if (this._mqttClient.connected) {
+            this._finishConnection();
+        }
+    }
+
+    private _finishConnection() {
+        this._mqttClient.subscribe(`${this._baseTopic}/#`, {nl: true} as IClientSubscribeOptions);
+        this._readyPromise.resolve();
     }
 }

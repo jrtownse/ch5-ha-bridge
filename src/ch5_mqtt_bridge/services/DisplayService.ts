@@ -10,7 +10,7 @@ export class DisplayService {
         @inject(DisplayController) public displayController: DisplayController,
         @inject(Ch5MqttConnector) public mqttClient: Ch5MqttConnector
     ) {
-        this.mqttClient.connectCallback(() => {
+        this.mqttClient.readyPromise.then(() => {
             this.displayController.onBacklightPowerChange(this._onDisplayPowerChange.bind(this));
             this.displayController.onBacklightBrightnessChange(this._onDisplayBrightnessChange.bind(this));
         })

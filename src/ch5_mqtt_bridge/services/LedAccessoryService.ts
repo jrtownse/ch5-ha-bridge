@@ -10,7 +10,7 @@ export class LedAccessoryService {
         @inject(LedAccessoryController) public ledAccessoryController: LedAccessoryController,
         @inject(Ch5MqttConnector) public mqttClient: Ch5MqttConnector
     ) {
-        this.mqttClient.connectCallback(() => {
+        this.mqttClient.readyPromise.then(() => {
             this.mqttClient.sendMessage("ledAccessory/available", this.ledAccessoryController.hasAccessory, { retain: true });
 
             this.ledAccessoryController.addLedStateChangeCallback(this._onLedStateChange.bind(this));

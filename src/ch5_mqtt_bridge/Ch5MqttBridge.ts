@@ -10,11 +10,15 @@ import {PowerButtonBehavior} from "./behaviors/PowerButtonBehavior.ts";
 import {DisplayController} from "./interop/controllers/DisplayController.ts";
 import {AmbientLightController} from "./interop/controllers/AmbientLightController.ts";
 import {SipController} from "./interop/controllers/SipController.ts";
+import {RouteCallback, RouteUnsubscribeCallback} from "./mqtt/router/RouteTypes.ts";
+import {IClientPublishOptions} from "mqtt/lib/client";
+import {DeviceInfo} from "./interop/DeviceInfo.ts";
+import JoinControl from "./interop/JoinControl.ts";
 
 export class Ch5MqttBridge {
     private _diContainer: Container = new Container();
 
-    private _initialized: boolean = false;
+    public ch5MqttConnector: Ch5MqttConnector;
 
     public joinProxyService: JoinProxyService | undefined;
     public touchEventService: HardButtonService | undefined;
@@ -24,6 +28,7 @@ export class Ch5MqttBridge {
 
     constructor() {
         this._diContainer.bind(Ch5MqttConnector).toSelf().inSingletonScope();
+        this.ch5MqttConnector = this._diContainer.get(Ch5MqttConnector);
 
         this._diContainer.bind(AmbientLightController).toSelf().inSingletonScope();
         this._diContainer.bind(DisplayController).toSelf().inSingletonScope();
@@ -38,22 +43,13 @@ export class Ch5MqttBridge {
         this._diContainer.bind(PowerButtonBehavior).toSelf().inSingletonScope();
     }
 
-    public start() {
-        // request a full copy of state as soon as possible, canary on some random very-late signal
-        window.CrComLib.subscribeState("s", "Csig.fb33331", (canary: string) => {
-            if (this._initialized) {
-                return;
-            }
+    public async start() {
+        await JoinControl.syncJoinStates();
 
-            if (canary != "") {
-                console.log("[Ch5MqttBridge] State synchronized successfully, booting app...");
-                this._initialized = true;
+        console.log("[Ch5MqttBridge] State synchronized successfully, booting app...");
 
-                this.loadServices();
-            }
-        });
-
-        window.CrComLib.publishEvent("object", "Csig.State_Synchronization", {});
+        this.ch5MqttConnector.setBaseTopic(`crestron/ch5_mqtt/${DeviceInfo.getModelNumber()}_${DeviceInfo.getTSID()}`);
+        this.loadServices();
     }
 
     public loadServices() {
@@ -63,5 +59,13 @@ export class Ch5MqttBridge {
         this.ledAccessoryService = this._diContainer.get(LedAccessoryService);
 
         this.powerButtonBehavior = this._diContainer.get(PowerButtonBehavior);
+    }
+
+    public subscribeMessage(topicSpec: string, handler: RouteCallback): RouteUnsubscribeCallback {
+        return this.ch5MqttConnector.registerRoute(topicSpec, handler);
+    }
+
+    public sendMessage(topic: string, message: object, args?: IClientPublishOptions) {
+        this.ch5MqttConnector.sendMessage(topic, message, args);
     }
 }
