@@ -19,8 +19,8 @@
 
 The `ch5-ha-bridge` aims to bridge the gap between Crestron tablets (such as the TSW-xx60 and TSW-xx70 product lines)
 and open smart home projects like Home Assistant. It works standalone, meaning there is no need for a central
-processor or any controlled programming. Everything lives, to the best of its ability, within the context of a
-tablet operating standalone.
+processor or any controlled programming. Everything lives, to the best of its ability, within the context of the tablet
+itself. **Root/debug access to the tablet is NOT required to use this application!**
 
 This project aims to bridge the gap between Crestron tablets (e.g. the TSW xx60 and xx70 product lines) and Home 
 Assistant, allowing deep integration without needing a control processor or the ability to do custom programming on
@@ -49,7 +49,7 @@ because the underyling code is unlikely to change regularly.
 
 1. Compile [`polyfill_localstorage.ts`](./homeassistant/polyfill_localstorage.ts) to JavaScript using your favorite
    TypeScript compiler.
-1. Place [`coldboot.html`](./homeassistant/coldboot.html) and your compiled `polyfill_localstorage.js` file in `www/crestron`
+2. Place [`coldboot.html`](./homeassistant/coldboot.html) and your compiled `polyfill_localstorage.js` file in `www/crestron`
    on your HA server.
 3. Define the `VITE_HA_DASHBOARD_URL` as `http://YOUR_HA_HOST/local/crestron/coldboot.html?redirect_to=/your/dashboard/url`
 4. Make the following changes to your HA `configuration.yaml`:
@@ -62,16 +62,25 @@ because the underyling code is unlikely to change regularly.
       use_x_frame_options: false
     ```
 
-If HTTPS access is desired and a publicly-trusted certificate is not available, you will need to load all relevant certificates
-[on the panel](https://docs.crestron.com/en-us/8989/Content/Topics/Web-Configuration.htm#802.1x_Configuration). Note that HTTPS has
-not been thoroughly tested, and may cause other problems I don't know about yet.
+If HTTPS access is desired and a publicly-trusted certificate is not available, you will need to load all relevant 
+certificates [on the panel][tsw-ssl-config]. Note that HTTPS has not been thoroughly tested, and may cause other 
+problems I don't know about yet.
+
+Also note that setting `http.use_x_frame_options` will make your Home Assistant install 
+[slightly less secure][ha-clickjacking]. A [proposal is open][ha-csp] to fix this, but additional work will be necessary
+on the Home Assistant side for this.
+
+[tsw-ssl-config]: https://docs.crestron.com/en-us/8989/Content/Topics/Web-Configuration.htm#802.1x_Configuration
+[ha-clickjacking]: https://github.com/home-assistant/core/security/advisories/GHSA-935v-rmg9-44mw
+[ha-csp]: https://github.com/orgs/home-assistant/discussions/118
 
 ## Project Direction
 
 As of now, this project is very much a proof of concept. It will not run properly without configuration changes to Home
-Assistant (specifically, disabling `X-Frame-Options`), and there are still unanswered questions regarding how best to 
-tie things in properly. We may need to create a "bootloader" CH5 app that then gets proper scripts from HA, but there
-are many other possible considerations here.
+Assistant, and there are still unanswered questions regarding how best to tie things in properly.
+
+There are plans to build a proper "bootloader" app to fetch the latest JavaScript from the Home Assistant install to
+facilitate easy app updates, as well as remote configuration and other niceties. 
 
 Help is very much welcome here!
 
