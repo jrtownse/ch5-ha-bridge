@@ -1,5 +1,7 @@
 # Crestron CH5/HomeAssistant Bridge
 
+[![Discord](https://img.shields.io/discord/1391887962102566962?logo=discord&logoColor=white&label=discord&color=%235865F2)](https://discord.gg/Dw8wJV5Bva)
+
 > [!warning]
 >
 > **This project is not affiliated with, endorsed by, or supported by Crestron.** It is very likely that Crestron
