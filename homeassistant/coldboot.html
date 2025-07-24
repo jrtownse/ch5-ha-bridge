@@ -7,6 +7,8 @@
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <script>
         import("./polyfill_localstorage.js").then(() => {
+            document.getElementById("status_message").innerText = "Polyfill script loaded, initializing..."
+
             window.localStorage.__storage.onDataLoadComplete(() => {
                 console.log(`Data load reported as complete. LocalStorage has ${window.localStorage.length} items...`)
 
@@ -22,6 +24,9 @@
                 document.getElementById("status_message").innerText = "Data load complete. Redirecting to " + redirectTo;
                 window.location = urlOrigin + redirectTo;
             });
+        }).catch((e) => {
+            console.error(e);
+            document.getElementById("status_message").innerText = `Polyfill failed: ${e}`
         });
     </script>
 </head>

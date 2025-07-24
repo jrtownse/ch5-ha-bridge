@@ -616,4 +616,6 @@ export function installLocalStoragePolyfill(
 
 if (typeof window !== 'undefined' && !window.localStorage && typeof (JSInterface) !== 'undefined') {
   installLocalStoragePolyfill('localStorageShim');
+} else {
+  console.warn("Cowardly refusing to initialize polyfill on a non-Crestron device!");
 }
