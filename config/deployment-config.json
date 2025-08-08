@@ -1,0 +1,69 @@
+{
+  "deployments": {
+    "example_livingroom": {
+      "enabled": true,
+      "profile": "TSW-1060",
+      "hostname": "192.168.1.100",
+      "serial": "LIVINGROOM01",
+      "location": "Living Room",
+      "ha_dashboard": "/lovelace-livingroom/0",
+      "mqtt": {
+        "topic_prefix": "livingroom_tablet"
+      },
+      "features": {
+        "camera_streaming": false,
+        "auto_brightness": true,
+        "power_save_mode": true
+      }
+    },
+    "example_kitchen": {
+      "enabled": true,
+      "profile": "TSW-760",
+      "hostname": "192.168.1.101",
+      "serial": "KITCHEN01",
+      "location": "Kitchen",
+      "ha_dashboard": "/lovelace-kitchen/0",
+      "mqtt": {
+        "topic_prefix": "kitchen_tablet"
+      },
+      "features": {
+        "camera_streaming": false,
+        "auto_brightness": false,
+        "power_save_mode": false
+      }
+    },
+    "example_bedroom": {
+      "enabled": false,
+      "profile": "TSW-560",
+      "hostname": "192.168.1.102",
+      "serial": "BEDROOM01",
+      "location": "Master Bedroom",
+      "ha_dashboard": "/lovelace-bedroom/0",
+      "mqtt": {
+        "topic_prefix": "bedroom_tablet"
+      },
+      "features": {
+        "camera_streaming": false,
+        "auto_brightness": true,
+        "power_save_mode": true
+      }
+    }
+  },
+  "global": {
+    "home_assistant": {
+      "url": "http://homeassistant.local:8123",
+      "coldboot_path": "/local/crestron/coldboot.html"
+    },
+    "mqtt": {
+      "broker": "ws://homeassistant.local:8083/mqtt",
+      "username": "mqtt",
+      "password": "mqtt",
+      "base_topic": "crestron/tablets"
+    },
+    "update": {
+      "check_interval": 3600,
+      "auto_update": false,
+      "update_server": "http://homeassistant.local:8123/local/crestron/updates/"
+    }
+  }
+}
