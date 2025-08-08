@@ -58,13 +58,16 @@ If you want to contribute back to the original repository:
 ## 📝 Commit Information
 
 **Branch:** `feature/improve-ha-dashboard`
-**Commit:** `0874932` - feat: Major enhancements - resolve all GitHub issues & add deployment automation
+**Commits:**
+- `0874932` - feat: Major enhancements - resolve all GitHub issues & add deployment automation
+- `8eb6cee` - docs: Add PR description and instructions for creating pull request  
+- `0694e47` - fix: Update repository URLs in documentation to point to enhanced fork
 
 ## 📊 Changes Summary
 
-- **19 files changed**
-- **4,652 lines added**
-- **1 line modified**
+- **22 files changed**
+- **4,950+ lines added**
+- **8 lines modified**
 - Resolves all 6 open GitHub issues
 - Adds comprehensive deployment automation
 - Includes complete documentation
