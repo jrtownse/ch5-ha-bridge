@@ -48,12 +48,12 @@ This guide will walk you through every step of installing the CH5 HA Bridge on y
 
 #### Option A: Using Git
 ```bash
-git clone https://github.com/KazWolfe/ch5-ha-bridge.git
+git clone https://github.com/jrtownse/ch5-ha-bridge.git
 cd ch5-ha-bridge
 ```
 
 #### Option B: Download ZIP
-1. Go to https://github.com/KazWolfe/ch5-ha-bridge
+1. Go to https://github.com/jrtownse/ch5-ha-bridge
 2. Click "Code" → "Download ZIP"
 3. Extract the ZIP file
 4. Open terminal/command prompt in the extracted folder
@@ -465,7 +465,8 @@ automation:
 ## Need Help?
 
 - **Discord:** https://discord.gg/Dw8wJV5Bva
-- **GitHub Issues:** https://github.com/KazWolfe/ch5-ha-bridge/issues
+- **GitHub Issues:** https://github.com/jrtownse/ch5-ha-bridge/issues
+- **Original Project:** https://github.com/KazWolfe/ch5-ha-bridge
 - **Home Assistant Community:** https://community.home-assistant.io
 
 ---

@@ -3,7 +3,7 @@
 Transform your Crestron TSW-xx60/xx70 touch panels into powerful Home Assistant controllers without any Crestron programming or control processor!
 
 [![Discord](https://img.shields.io/discord/1391887962102566962?logo=discord&logoColor=white&label=discord&color=%235865F2)](https://discord.gg/Dw8wJV5Bva)
-[![Version](https://img.shields.io/badge/version-4.0.0-blue)](https://github.com/KazWolfe/ch5-ha-bridge)
+[![Version](https://img.shields.io/badge/version-5.0.0-blue)](https://github.com/jrtownse/ch5-ha-bridge)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 ## ✨ Features
@@ -51,7 +51,7 @@ Transform your Crestron TSW-xx60/xx70 touch panels into powerful Home Assistant 
 
 ```bash
 # Clone the repository
-git clone https://github.com/KazWolfe/ch5-ha-bridge.git
+git clone https://github.com/jrtownse/ch5-ha-bridge.git
 cd ch5-ha-bridge
 
 # Run the quick start script
@@ -529,7 +529,8 @@ Contributions are welcome! Please:
 ## 📚 Resources
 
 - [Discord Community](https://discord.gg/Dw8wJV5Bva)
-- [Original Project](https://github.com/KazWolfe/ch5-ha-bridge)
+- [This Enhanced Version](https://github.com/jrtownse/ch5-ha-bridge)
+- [Original Project by KazWolfe](https://github.com/KazWolfe/ch5-ha-bridge)
 - [Home Assistant MQTT](https://www.home-assistant.io/integrations/mqtt/)
 - [Crestron CH5 Documentation](https://sdkcon78221.crestron.com/)
 

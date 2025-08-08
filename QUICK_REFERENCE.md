@@ -273,4 +273,4 @@ npm run deploy:single <tablet_name>
 
 ---
 
-**Support:** [Discord](https://discord.gg/Dw8wJV5Bva) | [GitHub](https://github.com/KazWolfe/ch5-ha-bridge)
+**Support:** [Discord](https://discord.gg/Dw8wJV5Bva) | [Enhanced Version](https://github.com/jrtownse/ch5-ha-bridge) | [Original](https://github.com/KazWolfe/ch5-ha-bridge)
