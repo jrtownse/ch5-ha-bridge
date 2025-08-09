@@ -1,0 +1,112 @@
+{
+  "profiles": {
+    "TSW-560": {
+      "model": "TSW-560",
+      "resolution": {
+        "width": 800,
+        "height": 480
+      },
+      "devicePixelRatio": 1,
+      "features": {
+        "camera": true,
+        "microphone": true,
+        "ledAccessory": false,
+        "hardButtons": ["BUTTON_POWER", "BUTTON_HOME", "BUTTON_LIGHTBULB", "BUTTON_UP", "BUTTON_DOWN"]
+      },
+      "performance": {
+        "maxMemory": "512MB",
+        "recommendedFps": 30
+      }
+    },
+    "TSW-760": {
+      "model": "TSW-760",
+      "resolution": {
+        "width": 1024,
+        "height": 600
+      },
+      "devicePixelRatio": 1,
+      "features": {
+        "camera": true,
+        "microphone": true,
+        "ledAccessory": true,
+        "hardButtons": ["BUTTON_POWER", "BUTTON_HOME", "BUTTON_LIGHTBULB", "BUTTON_UP", "BUTTON_DOWN"]
+      },
+      "performance": {
+        "maxMemory": "1GB",
+        "recommendedFps": 30
+      }
+    },
+    "TSW-1060": {
+      "model": "TSW-1060",
+      "resolution": {
+        "width": 1280,
+        "height": 800
+      },
+      "devicePixelRatio": 1.5,
+      "features": {
+        "camera": true,
+        "microphone": true,
+        "ledAccessory": true,
+        "hardButtons": ["BUTTON_POWER", "BUTTON_HOME", "BUTTON_LIGHTBULB", "BUTTON_UP", "BUTTON_DOWN"]
+      },
+      "performance": {
+        "maxMemory": "2GB",
+        "recommendedFps": 60
+      }
+    },
+    "TSW-560-NC": {
+      "model": "TSW-560-NC",
+      "resolution": {
+        "width": 800,
+        "height": 480
+      },
+      "devicePixelRatio": 1,
+      "features": {
+        "camera": false,
+        "microphone": false,
+        "ledAccessory": false,
+        "hardButtons": ["BUTTON_POWER", "BUTTON_HOME", "BUTTON_LIGHTBULB", "BUTTON_UP", "BUTTON_DOWN"]
+      },
+      "performance": {
+        "maxMemory": "512MB",
+        "recommendedFps": 30
+      }
+    },
+    "TSW-760-NC": {
+      "model": "TSW-760-NC",
+      "resolution": {
+        "width": 1024,
+        "height": 600
+      },
+      "devicePixelRatio": 1,
+      "features": {
+        "camera": false,
+        "microphone": false,
+        "ledAccessory": true,
+        "hardButtons": ["BUTTON_POWER", "BUTTON_HOME", "BUTTON_LIGHTBULB", "BUTTON_UP", "BUTTON_DOWN"]
+      },
+      "performance": {
+        "maxMemory": "1GB",
+        "recommendedFps": 30
+      }
+    },
+    "TSW-1060-NC": {
+      "model": "TSW-1060-NC",
+      "resolution": {
+        "width": 1280,
+        "height": 800
+      },
+      "devicePixelRatio": 1.5,
+      "features": {
+        "camera": false,
+        "microphone": false,
+        "ledAccessory": true,
+        "hardButtons": ["BUTTON_POWER", "BUTTON_HOME", "BUTTON_LIGHTBULB", "BUTTON_UP", "BUTTON_DOWN"]
+      },
+      "performance": {
+        "maxMemory": "2GB",
+        "recommendedFps": 60
+      }
+    }
+  }
+}

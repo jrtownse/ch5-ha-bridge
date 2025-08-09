@@ -1,0 +1,179 @@
+# Example Home Assistant Automations for Crestron Tablet Hardware Buttons
+# Add these to your automations.yaml file and customize for your needs
+
+# Power Button - Toggle Room Lights
+- alias: "Tablet Power Button - Toggle Lights"
+  trigger:
+    - platform: mqtt
+      topic: "crestron/tablets/livingroom_tablet/hardButton/BUTTON_POWER/press"
+      payload: "true"
+  condition:
+    - condition: template
+      value_template: "{{ trigger.payload == 'true' }}"
+  action:
+    - service: light.toggle
+      target:
+        entity_id: light.living_room
+
+# Home Button - Return to Main Dashboard
+- alias: "Tablet Home Button - Navigate Home"
+  trigger:
+    - platform: mqtt
+      topic: "crestron/tablets/+/hardButton/BUTTON_HOME/press"
+      payload: "true"
+  action:
+    - service: browser_mod.navigate
+      data:
+        path: "/lovelace/0"
+        browser_id: "{{ trigger.topic.split('/')[2] }}"
+
+# Light Button - Cycle Through Scenes
+- alias: "Tablet Light Button - Cycle Scenes"
+  trigger:
+    - platform: mqtt
+      topic: "crestron/tablets/+/hardButton/BUTTON_LIGHTBULB/press"
+      payload: "true"
+  action:
+    - service: input_select.select_next
+      target:
+        entity_id: input_select.room_scene
+    - service: scene.turn_on
+      target:
+        entity_id: "scene.{{ states('input_select.room_scene') | replace(' ', '_') | lower }}"
+
+# Up/Down Buttons - Adjust Brightness
+- alias: "Tablet Up Button - Increase Brightness"
+  trigger:
+    - platform: mqtt
+      topic: "crestron/tablets/+/hardButton/BUTTON_UP/press"
+      payload: "true"
+  action:
+    - service: light.turn_on
+      data:
+        entity_id: light.living_room
+        brightness_step_pct: 10
+
+- alias: "Tablet Down Button - Decrease Brightness"
+  trigger:
+    - platform: mqtt
+      topic: "crestron/tablets/+/hardButton/BUTTON_DOWN/press"
+      payload: "true"
+  action:
+    - service: light.turn_on
+      data:
+        entity_id: light.living_room
+        brightness_step_pct: -10
+
+# Long Press Power Button - Emergency Mode
+- alias: "Tablet Power Button Long Press - Emergency"
+  trigger:
+    - platform: mqtt
+      topic: "crestron/tablets/+/hardButton/BUTTON_POWER/press"
+      payload: "true"
+      for:
+        seconds: 3
+  action:
+    - service: script.emergency_mode
+    - service: notify.all_devices
+      data:
+        message: "Emergency mode activated from {{ trigger.topic.split('/')[2] }}"
+        priority: high
+
+# Button LED Control Based on Light State
+- alias: "Sync Tablet Button LEDs with Lights"
+  trigger:
+    - platform: state
+      entity_id: light.living_room
+  action:
+    - service: mqtt.publish
+      data:
+        topic: "crestron/tablets/livingroom_tablet/hardButton/BUTTON_LIGHTBULB/active"
+        payload: "{{ 'true' if is_state('light.living_room', 'on') else 'false' }}"
+
+# Tablet Display Sleep Mode
+- alias: "Tablet Display Sleep at Night"
+  trigger:
+    - platform: time
+      at: "22:00:00"
+  action:
+    - service: mqtt.publish
+      data:
+        topic: "crestron/tablets/+/display/power/set"
+        payload: "false"
+
+- alias: "Tablet Display Wake in Morning"
+  trigger:
+    - platform: time
+      at: "07:00:00"
+  action:
+    - service: mqtt.publish
+      data:
+        topic: "crestron/tablets/+/display/power/set"
+        payload: "true"
+
+# Button Brightness Based on Ambient Light
+- alias: "Adjust Tablet Button Brightness"
+  trigger:
+    - platform: state
+      entity_id: sensor.ambient_light
+  action:
+    - service: mqtt.publish
+      data:
+        topic: "crestron/tablets/+/hardButton/brightness"
+        payload: >
+          {% set lux = states('sensor.ambient_light') | int %}
+          {% if lux < 10 %}
+            1000
+          {% elif lux < 50 %}
+            5000
+          {% elif lux < 200 %}
+            20000
+          {% else %}
+            65535
+          {% endif %}
+
+# Multi-Tablet Synchronization
+- alias: "Sync All Tablets to Scene Change"
+  trigger:
+    - platform: state
+      entity_id: input_select.house_mode
+  action:
+    - service: mqtt.publish
+      data:
+        topic: "crestron/tablets/+/hardButton/BUTTON_HOME/active"
+        payload: "true"
+    - delay:
+        milliseconds: 500
+    - service: mqtt.publish
+      data:
+        topic: "crestron/tablets/+/hardButton/BUTTON_HOME/active"
+        payload: "false"
+
+# Tablet Status Monitoring
+- alias: "Alert on Tablet Offline"
+  trigger:
+    - platform: mqtt
+      topic: "crestron/tablets/+/status"
+      payload: "offline"
+      for:
+        minutes: 5
+  action:
+    - service: notify.admin
+      data:
+        title: "Tablet Offline"
+        message: "Tablet {{ trigger.topic.split('/')[2] }} has been offline for 5 minutes"
+
+# Update Available Notification
+- alias: "Notify on Tablet Update Available"
+  trigger:
+    - platform: mqtt
+      topic: "crestron/tablets/+/update/available"
+  action:
+    - service: persistent_notification.create
+      data:
+        title: "Tablet Update Available"
+        message: >
+          Update {{ trigger.payload_json.available }} is available for tablet.
+          Current version: {{ trigger.payload_json.current }}
+          Release notes: {{ trigger.payload_json.releaseNotes }}
+        notification_id: "tablet_update_{{ trigger.topic.split('/')[2] }}"
