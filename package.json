@@ -8,7 +8,7 @@
     "build": "tsc && vite build",
     "build:dev": "tsc && NODE_ENV=development vite build --mode development",
     "build:prod": "tsc && vite build --mode production",
-    "build:polyfill": "tsc homeassistant/polyfill_localstorage.ts --outDir homeassistant --module es2020 --target es2020",
+    "build:polyfill": "tsc --project tsconfig.polyfill.json",
     "archive": "ch5-cli archive -p ch5-ha-bridge -d dist -o archive",
     "deploy:panel": "ch5-cli deploy -p -H 0.0.0.0 -t touchscreen archive/ch5-ha-bridge.ch5z --slow-mode",
     "deploy:all": "node scripts/deploy-manager.js deploy-all",

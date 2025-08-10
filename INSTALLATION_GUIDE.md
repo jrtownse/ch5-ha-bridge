@@ -199,9 +199,8 @@ frontend:
 http:
   use_x_frame_options: false
 
-mqtt:
-  discovery: true
-  discovery_prefix: homeassistant
+# Note: MQTT discovery is enabled by default in Home Assistant 2022.6+
+# No additional MQTT configuration needed in YAML
 ```
 
 ### Step 2.6: Check Configuration & Restart

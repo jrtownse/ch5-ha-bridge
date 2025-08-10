@@ -14,9 +14,6 @@ import {RouteCallback, RouteUnsubscribeCallback} from "./mqtt/router/RouteTypes.
 import {IClientPublishOptions} from "mqtt/lib/client";
 import {DeviceInfo} from "./interop/DeviceInfo.ts";
 import JoinControl from "./interop/JoinControl.ts";
-import {UpdateService} from "./services/UpdateService.ts";
-import {AutodiscoveryService} from "./services/AutodiscoveryService.ts";
-import {ScreensaverService} from "./services/ScreensaverService.ts";
 
 export class Ch5MqttBridge {
     private _diContainer: Container = new Container();
@@ -26,9 +23,6 @@ export class Ch5MqttBridge {
     public joinProxyService: JoinProxyService | undefined;
     public touchEventService: HardButtonService | undefined;
     public ledAccessoryService: LedAccessoryService | undefined;
-    public updateService: UpdateService | undefined;
-    public autodiscoveryService: AutodiscoveryService | undefined;
-    public screensaverService: ScreensaverService | undefined;
 
     public powerButtonBehavior: PowerButtonBehavior | undefined;
 
@@ -45,9 +39,6 @@ export class Ch5MqttBridge {
         this._diContainer.bind(HardButtonService).toSelf().inSingletonScope();
         this._diContainer.bind(JoinProxyService).toSelf().inSingletonScope();
         this._diContainer.bind(LedAccessoryService).toSelf().inSingletonScope();
-        this._diContainer.bind(UpdateService).toSelf().inSingletonScope();
-        this._diContainer.bind(AutodiscoveryService).toSelf().inSingletonScope();
-        this._diContainer.bind(ScreensaverService).toSelf().inSingletonScope();
 
         this._diContainer.bind(PowerButtonBehavior).toSelf().inSingletonScope();
     }
@@ -66,14 +57,8 @@ export class Ch5MqttBridge {
         this.joinProxyService = this._diContainer.get(JoinProxyService);
         this.touchEventService = this._diContainer.get(HardButtonService);
         this.ledAccessoryService = this._diContainer.get(LedAccessoryService);
-        this.updateService = this._diContainer.get(UpdateService);
-        this.autodiscoveryService = this._diContainer.get(AutodiscoveryService);
-        this.screensaverService = this._diContainer.get(ScreensaverService);
 
         this.powerButtonBehavior = this._diContainer.get(PowerButtonBehavior);
-        
-        // Check for pending updates after restart
-        this.updateService.checkPendingUpdate();
     }
 
     public subscribeMessage(topicSpec: string, handler: RouteCallback): RouteUnsubscribeCallback {
