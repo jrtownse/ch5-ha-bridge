@@ -128,16 +128,52 @@ VITE_AUTO_UPDATE="${global.update.auto_update}"
   }
 
   deployArchive(name, config) {
+    const archivePath = path.join(projectRoot, 'archive', `ch5-ha-bridge-${name}.ch5z`);
+    
+    // Check if archive exists
+    if (!fs.existsSync(archivePath)) {
+      throw new Error(`Archive file not found: ${archivePath}`);
+    }
+    
+    // Build deployment command based on available credentials
+    let deployCmd = `ch5-cli deploy -H ${config.hostname} -t touchscreen ${archivePath} --slow-mode`;
+    
+    // Add credentials if available in config
+    if (config.credentials) {
+      if (config.credentials.username) {
+        deployCmd += ` -u ${config.credentials.username}`;
+      }
+      if (config.credentials.identity_file) {
+        deployCmd += ` -i ${config.credentials.identity_file}`;
+      }
+    } else {
+      // Try with default Crestron credentials
+      deployCmd += ` -u crestron`;
+    }
+    
     try {
-      const archivePath = path.join(projectRoot, 'archive', `ch5-ha-bridge-${name}.ch5z`);
-      
-      // Using slow mode for reliability with second-hand tablets
-      execSync(`ch5-cli deploy -p -H ${config.hostname} -t touchscreen ${archivePath} --slow-mode`, {
+      execSync(deployCmd, {
         cwd: projectRoot,
         stdio: 'pipe'
       });
     } catch (error) {
-      throw new Error(`Deployment failed: ${error.message}`);
+      // If deployment fails, provide manual instructions
+      console.log(`\n   ⚠️  Automated deployment failed. Archive created successfully at:`);
+      console.log(`      ${archivePath}`);
+      console.log(`\n   Manual deployment options:`);
+      console.log(`   1. Using ch5-cli with credentials:`);
+      console.log(`      ch5-cli deploy -p -H ${config.hostname} -t touchscreen ${archivePath}`);
+      console.log(`\n   2. Using Crestron Toolbox:`);
+      console.log(`      - Open Crestron Toolbox`);
+      console.log(`      - Connect to ${config.hostname}`);
+      console.log(`      - Navigate to File Manager`);
+      console.log(`      - Upload ${path.basename(archivePath)} to /display/`);
+      console.log(`\n   3. Using Web Interface (if available):`);
+      console.log(`      - Navigate to http://${config.hostname}`);
+      console.log(`      - Login with credentials`);
+      console.log(`      - Upload the CH5Z file\n`);
+      
+      throw new Error(`Automated deployment requires SSH key or manual intervention`);
     }
   }
 
